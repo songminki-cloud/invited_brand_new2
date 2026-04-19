@@ -1,0 +1,2553 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>M몰 Invited 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Noto+Serif+KR:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: fixed;
+}
+
+body {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+}
+
+:root {
+    --ivory: #FFFEF9;
+    --charcoal: #1A1A1A;
+    --gold: #B8956A;
+    --bronze: #8B7355;
+    --warm-white: #F5F3ED;
+}
+
+body {
+    font-family: 'Noto Serif KR', serif;
+    background-color: var(--ivory);
+    color: var(--charcoal);
+    line-height: 1.7;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes fadeOutScale {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-15px) scale(0.96);
+        max-height: 0;
+        margin: 0;
+        padding: 0;
+    }
+}
+
+.page {
+    display: none !important;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+.page.active {
+    display: block !important;
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* INDEX PAGE */
+#index.page.active {
+    display: flex !important;
+    min-height: 100vh;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px;
+    width: 100%;
+    position: relative;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(184, 149, 106, 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(184, 149, 106, 0.04) 0%, transparent 50%),
+        var(--ivory);
+}
+
+.hero-section {
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.year-label {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+    letter-spacing: 0.3em;
+    color: var(--bronze);
+    font-weight: 400;
+    margin-bottom: 15px;
+}
+
+.main-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(4rem, 10vw, 8rem);
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 0.95;
+    margin-bottom: 25px;
+    letter-spacing: -0.03em;
+    -webkit-text-stroke: 1.5px rgba(26, 26, 26, 0.25);
+    text-stroke: 1.5px rgba(26, 26, 26, 0.25);
+    text-shadow: 0 4px 20px rgba(184, 149, 106, 0.15);
+}
+
+.main-subtitle {
+    display: block;
+    font-weight: 400;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    color: var(--gold);
+    margin-top: 12px;
+    letter-spacing: -0.02em;
+}
+
+.hero-description {
+    font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+    color: var(--charcoal);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+/* Tagline */
+.tagline {
+    margin: 25px 0 35px;
+    padding: 0 20px;
+    text-align: center;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.tagline-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+    color: var(--bronze);
+    font-weight: 400;
+    font-style: italic;
+    letter-spacing: 0.03em;
+    line-height: 1.6;
+}
+
+.tagline-emphasis {
+    color: var(--gold);
+    font-weight: 600;
+    font-style: normal;
+}
+
+/* Search Box - Main Position */
+.search-section-main {
+    max-width: 700px;
+    width: 100%;
+    margin: 35px auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.search-box {
+    position: relative;
+    width: 100%;
+}
+
+.search-input {
+    width: 100%;
+    padding: 18px 50px 18px 24px;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 1rem;
+    color: var(--charcoal);
+    background: rgba(245, 243, 237, 0.5);
+    border: 1px solid rgba(184, 149, 106, 0.3);
+    border-radius: 50px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    background: var(--warm-white);
+    border-color: var(--gold);
+    box-shadow: 0 4px 20px rgba(184, 149, 106, 0.15);
+}
+
+.search-input::placeholder {
+    color: var(--bronze);
+    opacity: 0.6;
+}
+
+.search-icon {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--bronze);
+    font-size: 1.2rem;
+    pointer-events: none;
+}
+
+.search-results {
+    margin-top: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+    background: var(--warm-white);
+    border: 1px solid rgba(184, 149, 106, 0.2);
+    border-radius: 12px;
+    display: none;
+}
+
+.search-results.active {
+    display: block;
+}
+
+.search-result-item {
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(184, 149, 106, 0.1);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background: rgba(184, 149, 106, 0.05);
+    padding-left: 30px;
+}
+
+.search-result-name {
+    font-weight: 600;
+    color: var(--charcoal);
+    margin-bottom: 4px;
+}
+
+.search-result-meta {
+    font-size: 0.85rem;
+    color: var(--bronze);
+}
+
+/* A-Z Brand Index - Clean Grid Layout */
+.brand-index-section {
+    max-width: 1400px;
+    width: 100%;
+    margin: 50px auto 40px;
+    padding: 40px 20px 40px;
+    border-top: 1px solid rgba(184, 149, 106, 0.2);
+    box-sizing: border-box;
+}
+
+.brand-index-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--charcoal);
+}
+
+.brand-index-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin: 0 auto;
+    max-width: 1200px;
+}
+
+.brand-index-item {
+    font-size: 0.88rem;
+    color: var(--charcoal);
+    padding: 11px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(184, 149, 106, 0.08);
+    transition: all 0.2s ease;
+    line-height: 1.4;
+}
+
+.brand-index-item:active {
+    color: var(--gold);
+}
+
+/* Favorite indicator in A-Z list */
+.brand-index-item.favorited {
+    color: var(--gold);
+    font-weight: 500;
+}
+
+.brand-index-item.favorited::before {
+    content: '♥ ';
+    color: var(--gold);
+    margin-right: 6px;
+}
+
+
+/* Favorites Button */
+.favorite-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    transition: all 0.25s ease;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.favorite-btn:hover {
+    transform: scale(1.12);
+    box-shadow: 0 3px 12px rgba(184, 149, 106, 0.25);
+}
+
+.favorite-btn.active {
+    background: var(--gold);
+}
+
+.favorite-btn::before {
+    content: '♡';
+    color: var(--bronze);
+    transition: all 0.25s ease;
+}
+
+.favorite-btn.active::before {
+    content: '♥';
+    color: white;
+}
+
+.favorite-btn:hover::before {
+    transform: scale(1.1);
+}
+
+/* Favorites category card */
+.category-card.favorites-card {
+    background: var(--warm-white);
+    border: 1px solid rgba(184, 149, 106, 0.15);
+}
+
+.favorites-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.25s ease;
+}
+
+.favorites-icon.active {
+    background: var(--gold);
+}
+
+.fav-heart {
+    font-size: 1.15rem;
+    color: var(--bronze);
+    transition: all 0.25s ease;
+}
+
+.favorites-icon.active .fav-heart {
+    content: '♥';
+    color: white;
+}
+
+.category-card.favorites-card .category-title {
+    color: var(--gold);
+    font-weight: 600;
+}
+
+.category-card.favorites-card .category-subtitle {
+    color: var(--bronze);
+}
+
+.category-card.favorites-card .category-count {
+    color: var(--gold);
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 8px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    color: var(--bronze);
+    text-transform: uppercase;
+}
+
+.categories-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.categories-grid {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 2px;
+    background: rgba(184, 149, 106, 0.15);
+    box-sizing: border-box;
+}
+
+.category-card {
+    background: var(--warm-white);
+    padding: 25px 25px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 160px;
+    animation: fadeInUp 0.8s ease-out both;
+    border: 1px solid rgba(184, 149, 106, 0.15);
+}
+
+.category-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.category-card:active {
+    background: rgba(245, 243, 237, 0.7);
+}
+
+.category-card:nth-child(1) { animation-delay: 0.3s; }
+.category-card:nth-child(2) { animation-delay: 0.4s; }
+.category-card:nth-child(3) { animation-delay: 0.5s; }
+.category-card:nth-child(4) { animation-delay: 0.6s; }
+.category-card:nth-child(5) { animation-delay: 0.7s; }
+.category-card:nth-child(6) { animation-delay: 0.8s; }
+
+.category-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--gold);
+    opacity: 0.12;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.category-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+}
+
+.category-subtitle {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    margin-bottom: 14px;
+    opacity: 0.8;
+}
+
+.category-count {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+}
+
+/* CATEGORY PAGE */
+.header {
+    padding: 40px;
+    border-bottom: 1px solid rgba(184, 149, 106, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.back-link {
+    background: none;
+    border: none;
+    color: var(--bronze);
+    text-decoration: none;
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    transition: color 0.3s;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.back-link:hover {
+    color: var(--gold);
+}
+
+.logo {
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    color: var(--bronze);
+}
+
+.page-hero {
+    padding: 50px 20px 40px;
+    text-align: center;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    color: var(--charcoal);
+    margin-bottom: 20px;
+}
+
+.page-subtitle {
+    font-size: 1rem;
+    color: var(--bronze);
+    line-height: 1.6;
+    margin-bottom: 15px;
+    padding: 0 20px;
+}
+
+.brand-count {
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+}
+
+.share-btn {
+    margin-top: 25px;
+    padding: 10px 25px;
+    background: transparent;
+    color: var(--bronze);
+    border: 1px solid rgba(184, 149, 106, 0.3);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.share-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.share-btn:active {
+    background: rgba(184, 149, 106, 0.05);
+}
+
+.brands-grid {
+    max-width: 1600px;
+    margin: 40px auto;
+    padding: 0 20px 60px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 30px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.brand-card {
+    background: var(--warm-white);
+    padding: 30px 25px;
+    border: 1px solid rgba(184, 149, 106, 0.15);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease-out forwards;
+    position: relative;
+    transition: all 1s ease-in-out;
+}
+
+.brand-card:active {
+    box-shadow: 0 8px 20px rgba(26, 26, 26, 0.06);
+}
+
+
+.brand-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 0.75rem;
+    color: var(--bronze);
+    letter-spacing: 0.05em;
+}
+
+.brand-number {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--gold);
+    opacity: 0.1;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.brand-country {
+    font-style: italic;
+    font-size: 0.75rem;
+    color: var(--bronze);
+}
+
+.brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.brand-headline {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--gold);
+    margin-bottom: 10px;
+}
+
+.brand-definition {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.brand-description {
+    font-size: 0.8rem;
+    color: var(--bronze);
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.brand-link {
+    display: inline-block;
+    color: var(--charcoal);
+    text-decoration: none;
+    font-size: 0.8rem;
+    border-bottom: 1px solid var(--gold);
+    padding-bottom: 2px;
+    transition: color 0.2s;
+}
+
+.brand-link:active {
+    color: var(--gold);
+}
+
+footer {
+    text-align: center;
+    padding: 60px 40px;
+    color: var(--bronze);
+    font-size: 0.85rem;
+    border-top: 1px solid rgba(184, 149, 106, 0.2);
+}
+
+/* Floating Navigation Button */
+.floating-nav {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+}
+
+.nav-toggle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 254, 249, 0.95);
+    border: 1px solid rgba(184, 149, 106, 0.3);
+    color: var(--bronze);
+    font-size: 1.3rem;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(139, 115, 85, 0.15);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.nav-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 30px rgba(184, 149, 106, 0.25);
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.nav-menu {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    background: rgba(255, 254, 249, 0.98);
+    border: 1px solid rgba(184, 149, 106, 0.25);
+    border-radius: 12px;
+    padding: 10px;
+    min-width: 200px;
+    box-shadow: 0 8px 30px rgba(139, 115, 85, 0.15);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.nav-menu.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.nav-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(184, 149, 106, 0.1);
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    color: var(--charcoal);
+}
+
+.nav-item:last-child {
+    border-bottom: none;
+}
+
+.nav-item:hover {
+    background: rgba(184, 149, 106, 0.1);
+    padding-left: 18px;
+    color: var(--gold);
+}
+
+.nav-item.main {
+    font-weight: 600;
+    color: var(--gold);
+    border-bottom: 1px solid rgba(184, 149, 106, 0.2);
+}
+
+.nav-item.favorites {
+    font-weight: 500;
+    color: var(--bronze);
+}
+
+.nav-item.favorites:hover {
+    color: var(--gold);
+}
+
+/* ===== PC OPTIMIZATION (769px and above) ===== */
+@media (min-width: 769px) {
+    /* Main Index Page - Better spacing and sizing */
+    #index.page.active {
+        padding: 100px 60px !important;
+    }
+    
+    .hero-section {
+        margin-bottom: 80px !important;
+    }
+    
+    .year-label {
+        font-size: 1.1rem !important;
+        margin-bottom: 20px !important;
+    }
+    
+    .main-title {
+        font-size: 8rem !important;
+        margin-bottom: 40px !important;
+    }
+    
+    .main-subtitle {
+        font-size: 5rem !important;
+        margin-top: 15px !important;
+    }
+    
+    .hero-description {
+        font-size: 1.5rem !important;
+        max-width: 900px !important;
+        line-height: 1.8 !important;
+    }
+    
+    .tagline {
+        margin: 50px 0 60px !important;
+    }
+    
+    .tagline-text {
+        font-size: 1.8rem !important;
+        line-height: 1.7 !important;
+    }
+    
+    /* Search Box - Better width */
+    .search-section-main {
+        max-width: 900px !important;
+        margin: 60px auto !important;
+    }
+    
+    .search-input {
+        padding: 22px 65px 22px 32px !important;
+        font-size: 1.1rem !important;
+        border-radius: 60px !important;
+    }
+    
+    .search-icon {
+        right: 32px !important;
+        font-size: 1.4rem !important;
+    }
+    
+    /* Categories Grid - FORCE 2 columns on PC */
+    .categories-grid {
+        max-width: 1400px !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 4px !important;
+        padding: 0 20px !important;
+    }
+    
+    .category-card {
+        padding: 50px 30px !important;
+        min-height: 320px !important;
+        transition: all 0.3s ease;
+    }
+    
+    .category-card:hover {
+        background: rgba(245, 243, 237, 0.95) !important;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(139, 115, 85, 0.15);
+    }
+    
+    .category-number {
+        font-size: 5rem !important;
+        margin-bottom: 25px !important;
+        opacity: 0.15 !important;
+    }
+    
+    .category-title {
+        font-size: 2.2rem !important;
+        margin-bottom: 18px !important;
+    }
+    
+    .category-subtitle {
+        font-size: 1.05rem !important;
+        margin-bottom: 32px !important;
+        line-height: 1.8 !important;
+    }
+    
+    .category-count {
+        font-size: 0.9rem !important;
+    }
+    
+    /* A-Z Brand Index - Better columns */
+    .brand-index-section {
+        max-width: 1800px !important;
+        margin: 120px auto 100px !important;
+        padding: 100px 60px !important;
+    }
+    
+    .brand-index-title {
+        font-size: 3rem !important;
+        margin-bottom: 70px !important;
+    }
+    
+    .brand-index-list {
+        column-count: 6 !important;
+        column-gap: 60px !important;
+    }
+    
+    .brand-index-item {
+        font-size: 1rem !important;
+        padding: 14px 0 !important;
+        transition: all 0.2s ease;
+    }
+    
+    .brand-index-item:hover {
+        color: var(--gold);
+        padding-left: 10px;
+        font-weight: 500;
+    }
+    
+    /* Category/Favorites Pages Header */
+    .header {
+        padding: 60px 80px !important;
+    }
+    
+    .back-link {
+        font-size: 1.05rem !important;
+        transition: all 0.2s ease;
+    }
+    
+    .back-link:hover {
+        transform: translateX(-6px);
+        color: var(--gold);
+    }
+    
+    .logo {
+        font-size: 1.05rem !important;
+    }
+    
+    /* Page Hero */
+    .page-hero {
+        padding: 100px 60px 80px !important;
+        max-width: 1200px !important;
+    }
+    
+    .page-title {
+        font-size: 4.5rem !important;
+        margin-bottom: 35px !important;
+    }
+    
+    .page-subtitle {
+        font-size: 1.2rem !important;
+        line-height: 1.9 !important;
+        margin-bottom: 25px !important;
+        padding: 0 60px !important;
+    }
+    
+    .brand-count {
+        font-size: 1rem !important;
+    }
+    
+    .share-btn {
+        margin-top: 40px !important;
+        padding: 14px 36px !important;
+        font-size: 0.95rem !important;
+        border-radius: 25px !important;
+        transition: all 0.25s ease;
+    }
+    
+    .share-btn:hover {
+        background: rgba(184, 149, 106, 0.1) !important;
+        transform: translateY(-2px);
+        border-color: var(--gold) !important;
+        color: var(--gold) !important;
+    }
+    
+    /* Brand Cards Grid - FORCE 3 columns on PC */
+    .brands-grid {
+        max-width: 1800px !important;
+        margin: 80px auto !important;
+        padding: 0 60px 100px !important;
+        grid-template-columns: 1fr 1fr 1fr !important;
+        gap: 40px !important;
+    }
+    
+    .brand-card {
+        padding: 45px 40px !important;
+        transition: all 0.3s ease;
+    }
+    
+    .brand-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(139, 115, 85, 0.18);
+        border-color: rgba(184, 149, 106, 0.3);
+    }
+    
+    .brand-name {
+        font-size: 1.4rem !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .brand-headline {
+        font-size: 0.95rem !important;
+        margin-bottom: 14px !important;
+    }
+    
+    .brand-definition {
+        font-size: 1rem !important;
+        margin-bottom: 14px !important;
+    }
+    
+    .brand-description {
+        font-size: 0.9rem !important;
+        line-height: 1.8 !important;
+        margin-bottom: 22px !important;
+    }
+    
+    .brand-link {
+        font-size: 0.85rem !important;
+        transition: all 0.2s ease;
+    }
+    
+    .brand-link:hover {
+        color: var(--gold);
+        border-bottom-color: var(--charcoal);
+        padding-left: 2px;
+    }
+    
+    .brand-meta {
+        font-size: 0.85rem !important;
+        margin-bottom: 14px !important;
+    }
+    
+    .brand-number {
+        font-size: 3rem !important;
+        opacity: 0.12 !important;
+    }
+    
+    /* Favorite Button */
+    .favorite-btn {
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 1.25rem !important;
+    }
+    
+    .favorite-btn:hover {
+        transform: scale(1.18);
+        box-shadow: 0 4px 16px rgba(184, 149, 106, 0.3);
+    }
+    
+    /* Favorites Icon on Category Card */
+    .favorites-icon {
+        width: 42px !important;
+        height: 42px !important;
+        margin-bottom: 18px !important;
+    }
+    
+    .fav-heart {
+        font-size: 1.25rem !important;
+    }
+    
+    /* Footer */
+    footer {
+        padding: 100px 80px !important;
+        font-size: 0.95rem !important;
+    }
+    
+    /* Floating Navigation */
+    .floating-nav {
+        bottom: 50px !important;
+        right: 50px !important;
+    }
+    
+    .nav-toggle {
+        width: 68px !important;
+        height: 68px !important;
+        font-size: 1.5rem !important;
+    }
+    
+    .nav-toggle:hover {
+        transform: scale(1.08);
+    }
+    
+    .nav-menu {
+        bottom: 90px !important;
+        min-width: 240px !important;
+        padding: 14px !important;
+    }
+    
+    .nav-item {
+        padding: 14px 18px !important;
+        font-size: 1rem !important;
+    }
+    
+    .nav-item:hover {
+        padding-left: 24px !important;
+    }
+    
+    /* Search Results */
+    .search-results {
+        max-height: 600px !important;
+        border-radius: 16px !important;
+    }
+    
+    .search-result-item {
+        padding: 20px 32px !important;
+    }
+    
+    .search-result-item:hover {
+        padding-left: 40px !important;
+        background: rgba(184, 149, 106, 0.08) !important;
+    }
+    
+    .search-result-name {
+        font-size: 1.1rem !important;
+        margin-bottom: 6px !important;
+    }
+    
+    .search-result-meta {
+        font-size: 0.95rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    #index {
+        padding: 40px 10px;
+    }
+    
+    .hero-section {
+        padding: 40px 10px;
+        margin-bottom: 15px;
+    }
+    
+    .year-label {
+        font-size: 0.75rem;
+        margin-bottom: 10px;
+    }
+    
+    .main-title {
+        font-size: clamp(3rem, 12vw, 4.5rem);
+        margin-bottom: 15px;
+    }
+    
+    .main-subtitle {
+        font-size: clamp(2rem, 10vw, 3rem);
+        margin-top: 8px;
+    }
+    
+    .tagline {
+        margin: 20px 0 30px;
+        padding: 0 10px;
+    }
+    
+    .tagline-text {
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+    
+    .categories-grid {
+        grid-template-columns: 1fr !important;
+        padding: 0 !important;
+        gap: 1px !important;
+    }
+    
+    /* 모바일: hover 효과 완전 제거 */
+    .category-card {
+        padding: 40px 15px;
+        min-height: 280px;
+        border: 1px solid rgba(184, 149, 106, 0.2);
+    }
+    
+    .category-card::before {
+        display: none !important;
+    }
+    
+    .category-card:hover {
+        background: var(--warm-white);
+        color: var(--charcoal);
+        border-color: rgba(184, 149, 106, 0.2);
+    }
+    
+    .category-card:active {
+        background: rgba(245, 243, 237, 0.8);
+        border-color: var(--gold);
+    }
+    
+    .category-card .category-count {
+        color: var(--gold) !important;
+    }
+    
+    .category-number {
+        font-size: 4rem;
+        margin-bottom: 15px;
+    }
+    
+    .category-title {
+        font-size: 1.6rem;
+        margin-bottom: 14px;
+    }
+    
+    .category-subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 24px;
+    }
+    
+    /* 모바일 검색 */
+    .search-section-main {
+        padding: 0 10px;
+        margin: 25px auto;
+    }
+    
+    .search-input {
+        font-size: 0.95rem;
+        padding: 16px 45px 16px 20px;
+    }
+    
+    .search-icon {
+        right: 20px;
+        font-size: 1rem;
+    }
+    
+    /* 모바일 A-Z 인덱스 */
+    .brand-index-section {
+        padding: 30px 10px 30px;
+        margin: 40px auto 20px;
+    }
+    
+    .brand-index-title {
+        font-size: 1.5rem;
+        margin-bottom: 25px;
+    }
+    
+    .brand-index-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .brand-index-item {
+        font-size: 0.85rem;
+        padding: 10px 8px;
+    }
+
+    
+    /* 모바일 전용: 효과 제거 */
+    .category-card {
+        padding: 20px 20px;
+        min-height: 140px;
+    }
+    
+    .category-card::before {
+        display: none !important;
+    }
+    
+    .category-card:active {
+        background: rgba(245, 243, 237, 0.5);
+    }
+    
+    .category-number {
+        font-size: 2.5rem;
+        margin-bottom: 6px;
+    }
+    
+    .category-title {
+        font-size: 1.2rem;
+        margin-bottom: 6px;
+    }
+    
+    .category-subtitle {
+        font-size: 0.75rem;
+        margin-bottom: 12px;
+        line-height: 1.4;
+    }
+    
+    .category-count {
+        font-size: 0.7rem;
+    }
+    
+    .brands-grid {
+        grid-template-columns: 1fr;
+        padding: 0 15px 50px 15px;
+        gap: 20px;
+        max-width: 100%;
+        margin: 30px auto;
+    }
+    
+    .brand-card {
+        padding: 25px 20px;
+        width: 100%;
+    }
+    
+    .page-hero {
+        padding: 40px 20px 30px;
+    }
+    
+    .page-title {
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+    }
+    
+    .page-subtitle {
+        font-size: 0.9rem;
+        padding: 0 10px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div id="index" class="page active">
+    <div class="hero-section">
+        <div class="year-label">2 0 2 6</div>
+        <h1 class="main-title">
+            M·MALL
+            <span class="main-subtitle">INVITED</span>
+        </h1>
+    </div>
+
+    <div class="tagline">
+        <p class="tagline-text">
+            독창적이고 영향력 있는,<br>
+            <span class="tagline-emphasis">지금 가장 주목받는 브랜드의 엄선된 컬렉션</span>
+        </p>
+    </div>
+
+    <!-- Search Section -->
+    <div class="search-section-main">
+        <div class="search-box">
+            <input type="text" class="search-input" id="brandSearch" placeholder="어떤 브랜드를 찾고 계신가요?" autocomplete="off">
+            <span class="search-icon">🔍</span>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <!-- Categories Section Wrapper -->
+    <div class="categories-wrapper">
+        <div class="categories-grid">
+            <div class="category-card favorites-card" onclick="showPage('favorites')">
+            <div>
+                <div class="favorites-icon" id="favIcon">
+                    <span class="fav-heart">♡</span>
+                </div>
+                <h2 class="category-title">My Favorites</h2>
+                <p class="category-subtitle">내가 좋아요한 브랜드들. 나만의 특별한 컬렉션.</p>
+            </div>
+            <div class="category-count" id="favCount">0 BRANDS →</div>
+        </div>
+        <div class="category-card" onclick="showPage('philosophy')">
+            <div>
+                <div class="category-number">01</div>
+                <h2 class="category-title">Philosophy</h2>
+                <p class="category-subtitle">철학과 신념으로 세상을 바꾸는 브랜드들. 지속가능성, 장인정신, 혁신적 사고가 만든 본질의 가치.</p>
+            </div>
+            <div class="category-count">39 BRANDS →</div>
+        </div>
+        <div class="category-card" onclick="showPage('visual')">
+            <div>
+                <div class="category-number">02</div>
+                <h2 class="category-title">Visual</h2>
+                <p class="category-subtitle">압도적인 비주얼로 시선을 사로잡는 브랜드들. 디자인 자체가 메시지이며, 예술이 되는 순간.</p>
+            </div>
+            <div class="category-count">27 BRANDS →</div>
+        </div>
+        <div class="category-card" onclick="showPage('scarcity')">
+            <div>
+                <div class="category-number">03</div>
+                <h2 class="category-title">Scarcity</h2>
+                <p class="category-subtitle">희소성이 만드는 가치. 없어서 못 사는 브랜드, 한정된 수량이 만드는 열광.</p>
+            </div>
+            <div class="category-count">34 BRANDS →</div>
+        </div>
+        <div class="category-card" onclick="showPage('narrative')">
+            <div>
+                <div class="category-number">04</div>
+                <h2 class="category-title">Narrative</h2>
+                <p class="category-subtitle">강력한 스토리텔링으로 감정을 움직이는 브랜드들. 제품 너머의 이야기가 팬덤을 만든다.</p>
+            </div>
+            <div class="category-count">26 BRANDS →</div>
+        </div>
+        <div class="category-card" onclick="showPage('inspiration')">
+            <div>
+                <div class="category-number">05</div>
+                <h2 class="category-title">Inspiration</h2>
+                <p class="category-subtitle">영감을 주는 공간과 경험. 방문 자체가 여정이 되는 곳, 삶의 방식을 제안하는 브랜드.</p>
+            </div>
+            <div class="category-count">24 BRANDS →</div>
+        </div>
+        <div class="category-card" onclick="showPage('select_shop')">
+            <div>
+                <div class="category-number">06</div>
+                <h2 class="category-title">Select Shop</h2>
+                <p class="category-subtitle">세상의 아름다움을 큐레이션하는 편집샵들. 안목과 취향이 만드는 새로운 세계.</p>
+            </div>
+            <div class="category-count">17 BRANDS →
+        
+        </div>
+        </div>
+    </div>
+    <!-- End Categories Wrapper -->
+    
+    <!-- A-Z Brand Index -->
+    <div class="brand-index-section">
+        <h2 class="brand-index-title">ALL BRANDS A–Z</h2>
+        
+        <div class="brand-index-list" id="brandIndexList">
+            <div class="brand-index-item" onclick="searchBrand('10 꼬르소 꼬모 (10 Corso Como)')">
+                10 꼬르소 꼬모 (10 Corso Como)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('2000아카이브')">
+                2000아카이브
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('C.E (Cav Empt)')">
+                C.E (Cav Empt)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('LCDC')">
+                LCDC
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('NOS7 (엔오에스세븐)')">
+                NOS7 (엔오에스세븐)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('그랑핸드 (Granhand)')">
+                그랑핸드 (Granhand)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('그레일즈 (Grailz)')">
+                그레일즈 (Grailz)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('글로니 (Glowny)')">
+                글로니 (Glowny)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('금자안경 (Kaneko Optical)')">
+                금자안경 (Kaneko Optical)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('기준 (Kijun)')">
+                기준 (Kijun)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('긴자 소니 파크 (Ginza Sony Park)')">
+                긴자 소니 파크 (Ginza Sony Park)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('꼼 데 가르송 (Comme des Garçons)')">
+                꼼 데 가르송 (Comme des Garçons)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('꾸레쥬 (Courrèges)')">
+                꾸레쥬 (Courrèges)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('나띵리튼 (Nothing Written)')">
+                나띵리튼 (Nothing Written)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('나체 (Nache)')">
+                나체 (Nache)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('낫싱 (Nothing)')">
+                낫싱 (Nothing)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('네이버후드 (Neighborhood)')">
+                네이버후드 (Neighborhood)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('네펜데스 (Nepenthes)')">
+                네펜데스 (Nepenthes)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('노르다 (Norda)')">
+                노르다 (Norda)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('누데이크 (Nudake)')">
+                누데이크 (Nudake)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('니들스 (Needles)')">
+                니들스 (Needles)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('다이닛 (Deinet)')">
+                다이닛 (Deinet)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('다이와 피어39 (Daiwa Pier39)')">
+                다이와 피어39 (Daiwa Pier39)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('다이칸야마 츠타야 (T-Site)')">
+                다이칸야마 츠타야 (T-Site)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('더 로우 (The Row)')">
+                더 로우 (The Row)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('더 뮤지엄 비지터')">
+                더 뮤지엄 비지터
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('더 콘란샵 (The Conran Shop)')">
+                더 콘란샵 (The Conran Shop)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('더블탭스 (WTAPS)')">
+                더블탭스 (WTAPS)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('디스트릭트 비전 (District Vision)')">
+                디스트릭트 비전 (District Vision)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('디앤디파트먼트 (D&Department)')">
+                디앤디파트먼트 (D&amp;Department)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('디에스앤더가 (D.S. & DURGA)')">
+                디에스앤더가 (D.S. &amp; DURGA)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('떠그클럽 (Thug Club)')">
+                떠그클럽 (Thug Club)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('라이카 (Leica)')">
+                라이카 (Leica)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('랩 골프 (L.A.B. Golf)')">
+                랩 골프 (L.A.B. Golf)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('레어마켓 (Rare Market)')">
+                레어마켓 (Rare Market)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('렉토 (Recto)')">
+                렉토 (Recto)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('로아 하이킹 (ROA Hiking)')">
+                로아 하이킹 (ROA Hiking)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('로우 클래식 (Low Classic)')">
+                로우 클래식 (Low Classic)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('로우로우 (Rawrow)')">
+                로우로우 (Rawrow)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('루밍 (Rooming)')">
+                루밍 (Rooming)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('르917 (르구일칠)')">
+                르917 (르구일칠)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('르메르 (Lemaire)')">
+                르메르 (Lemaire)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('마뗑킴 (Matin Kim)')">
+                마뗑킴 (Matin Kim)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('마리 잔느 (Marie Jeanne)')">
+                마리 잔느 (Marie Jeanne)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('마틴 로즈 (Martine Rose)')">
+                마틴 로즈 (Martine Rose)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('메종 미하라 야스히로')">
+                메종 미하라 야스히로
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('모노하 (Monoha)')">
+                모노하 (Monoha)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('모모스커피 (Momos Coffee)')">
+                모모스커피 (Momos Coffee)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('모자이크 (Mosaic)')">
+                모자이크 (Mosaic)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('뮬러 반 세베렌
+(Muller Van Severen)')">
+                뮬러 반 세베렌
+(Muller Van Severen)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('미스테리 랜치 (Mystery Ranch)')">
+                미스테리 랜치 (Mystery Ranch)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('민주킴 (Minjukim)')">
+                민주킴 (Minjukim)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('밍글스 (Mingles)')">
+                밍글스 (Mingles)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('바 참 (Bar Cham)')">
+                바 참 (Bar Cham)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('바샤 커피 (Bacha Coffee)')">
+                바샤 커피 (Bacha Coffee)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('바이라오 (Vyrao)')">
+                바이라오 (Vyrao)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('버미큘라 (Vermicular)')">
+                버미큘라 (Vermicular)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('본봄 (Bonbom)')">
+                본봄 (Bonbom)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('본톤토이즈 (Bon Ton Toys)')">
+                본톤토이즈 (Bon Ton Toys)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('본투스탠드아웃')">
+                본투스탠드아웃
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('분더샵 (Boon the Shop)')">
+                분더샵 (Boon the Shop)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('불리 1803 (Buly 1803)')">
+                불리 1803 (Buly 1803)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('브라운야드 (Brownyard)')">
+                브라운야드 (Brownyard)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('비비앙 (BIBIANG)')">
+                비비앙 (BIBIANG)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('비이커 (Beaker)')">
+                비이커 (Beaker)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('비즈빔 (Visvim)')">
+                비즈빔 (Visvim)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('빔즈 재팬 (BEAMS Japan)')">
+                빔즈 재팬 (BEAMS Japan)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('사마야 (Samaya)')">
+                사마야 (Samaya)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('산산기어 (San San Gear)')">
+                산산기어 (San San Gear)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('산타 마리아 노벨라 (Santa Maria Nobella)')">
+                산타 마리아 노벨라 (Santa Maria Nobella)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('새티스파이 (Satisfy)')">
+                새티스파이 (Satisfy)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('샌프란시스코 마켓')">
+                샌프란시스코 마켓
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('서저리 (Surgery)')">
+                서저리 (Surgery)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('세이버리 (Savory)')">
+                세이버리 (Savory)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('센녹 (Sennok)')">
+                센녹 (Sennok)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('수토메 아포테케리 (Sutome Apothecary)')">
+                수토메 아포테케리 (Sutome Apothecary)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('쉘 코퍼레이션')">
+                쉘 코퍼레이션
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('슈프림 (Supreme)')">
+                슈프림 (Supreme)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('스내피커들 (Snappy Cuddle)')">
+                스내피커들 (Snappy Cuddle)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('스컬프 스토어 (Sculp Store)')">
+                스컬프 스토어 (Sculp Store)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('스킴스 (SKIMS)')">
+                스킴스 (SKIMS)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('스포티 앤 리치 (Sporty & Rich)')">
+                스포티 앤 리치 (Sporty &amp; Rich)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('슬로우 스테디 클럽')">
+                슬로우 스테디 클럽
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('시엔느 (Sienne)')">
+                시엔느 (Sienne)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('써네이 (Sunnei)')">
+                써네이 (Sunnei)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('아더에러 (ADER Error)')">
+                아더에러 (ADER Error)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('아라이 (Arai)')">
+                아라이 (Arai)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('아모멘토 (Amomento)')">
+                아모멘토 (Amomento)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('아비에무아 (Àvie Muah)')">
+                아비에무아 (Àvie Muah)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('아스티에 드 빌라트 (ASTIER de VILLATTE)')">
+                아스티에 드 빌라트 (ASTIER de VILLATTE)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('아워 레가시 (Our Legacy)')">
+                아워 레가시 (Our Legacy)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('아트 이프 액츠')">
+                아트 이프 액츠
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('아티스트 베이커리')">
+                아티스트 베이커리
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('알비오더블유 (RboW)')">
+                알비오더블유 (RboW)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('앤드 원더 (And Wander)')">
+                앤드 원더 (And Wander)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('어나더오피스')">
+                어나더오피스
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('어반 소피스티케이션')">
+                어반 소피스티케이션
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('언더마이카 (Undermycar)')">
+                언더마이카 (Undermycar)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('언더커버 (Undercover)')">
+                언더커버 (Undercover)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('언베니쉬 (Unvanish)')">
+                언베니쉬 (Unvanish)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('에임 레온 도르 (Aimé Leon Dore)')">
+                에임 레온 도르 (Aimé Leon Dore)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('에크루 (Ecru)')">
+                에크루 (Ecru)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('엑스 니힐로 (Ex Nihilo)')">
+                엑스 니힐로 (Ex Nihilo)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('엑스림 (XLIM)')">
+                엑스림 (XLIM)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('엔노이 (Ennoy)')">
+                엔노이 (Ennoy)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('엠프티 (Empty)')">
+                엠프티 (Empty)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('오라리 (Auralee)')">
+                오라리 (Auralee)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('오소이 (Osoi)')">
+                오소이 (Osoi)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('오이뮤 (Oimyu)')">
+                오이뮤 (Oimyu)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('오조스 (Ojos)')">
+                오조스 (Ojos)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('오픈 와이와이 (Open Yy)')">
+                오픈 와이와이 (Open Yy)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('웍스아웃 (Worksout)')">
+                웍스아웃 (Worksout)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('유니페어 (Unipair)')">
+                유니페어 (Unipair)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('유스 (Youth)')">
+                유스 (Youth)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('이세이 미야케 (Issey Miyake)')">
+                이세이 미야케 (Issey Miyake)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('이스턴에디션')">
+                이스턴에디션
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('이스트로그 (Eastlogue)')">
+                이스트로그 (Eastlogue)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('이야이야앤프렌즈')">
+                이야이야앤프렌즈
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('이에이에 (Yie Yie)')">
+                이에이에 (Yie Yie)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('자크뮈스 (Jacquemus)')">
+                자크뮈스 (Jacquemus)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('제스트 (Zest)')">
+                제스트 (Zest)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('제이킴 (J.Kim)')">
+                제이킴 (J.Kim)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('젠틀몬스터 (Gentle Monster)')">
+                젠틀몬스터 (Gentle Monster)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('젤리캣 (Jellycat)')">
+                젤리캣 (Jellycat)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('지용킴 (JiyongKim)')">
+                지용킴 (JiyongKim)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('챕터원 (Chapter 1)')">
+                챕터원 (Chapter 1)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('카멜커피 (Camel Coffee)')">
+                카멜커피 (Camel Coffee)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('카시나 (Kasina)')">
+                카시나 (Kasina)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('카이트 (Khaite)')">
+                카이트 (Khaite)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('캐피탈 (Kapital)')">
+                캐피탈 (Kapital)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('커피 마메야 (Koffee Mameya)')">
+                커피 마메야 (Koffee Mameya)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('케일 (Cayl)')">
+                케일 (Cayl)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('콜린스 (Collins)')">
+                콜린스 (Collins)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('콤포트 서울 (Comfort Seoul)')">
+                콤포트 서울 (Comfort Seoul)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('쿠시코크 (Kusikohc)')">
+                쿠시코크 (Kusikohc)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('쿠오카 (Kuoca)')">
+                쿠오카 (Kuoca)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('키스 (Kith)')">
+                키스 (Kith)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('키코 코스타디노브 (Kiko Kostadinov)')">
+                키코 코스타디노브 (Kiko Kostadinov)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('탬버린즈 (Tamburins)')">
+                탬버린즈 (Tamburins)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('테디테일즈 (Teddy Tales)')">
+                테디테일즈 (Teddy Tales)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('테크닉스 (Technics)')">
+                테크닉스 (Technics)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('텍라 (Tekla)')">
+                텍라 (Tekla)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('텍스쳐 (Txture)')">
+                텍스쳐 (Txture)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('토템 (Totême)')">
+                토템 (Totême)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('튀위드 (Tuewid)')">
+                튀위드 (Tuewid)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('트렁크 호텔 (TRUNK Hotel)')">
+                트렁크 호텔 (TRUNK Hotel)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('티퍼런스 (Teafference)')">
+                티퍼런스 (Teafference)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('틴에이지 엔지니어링 (Teenage Enginneering)')">
+                틴에이지 엔지니어링 (Teenage Enginneering)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('팀 왕 디자인 (TEAM WANG design)')">
+                팀 왕 디자인 (TEAM WANG design)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('파지티브호텔')">
+                파지티브호텔
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('퍼퓨머 H (Perfumer H)')">
+                퍼퓨머 H (Perfumer H)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('페사드 (Pesade)')">
+                페사드 (Pesade)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('포스트 아카이브 팩션 (PAF)')">
+                포스트 아카이브 팩션 (PAF)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('포터 클래식 (Porter Classic)')">
+                포터 클래식 (Porter Classic)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('포터리 (Pottery)')">
+                포터리 (Pottery)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('폴리테루 (Polyteru)')">
+                폴리테루 (Polyteru)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('프라마 (FRAMA)')">
+                프라마 (FRAMA)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('프라이탁 (Freitag)')">
+                프라이탁 (Freitag)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('플레이 포에버 (Playforever)')">
+                플레이 포에버 (Playforever)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('플르부아 (Pleuvoir)')">
+                플르부아 (Pleuvoir)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('피스마이너스원 (PEACEMINUSONE)')">
+                피스마이너스원 (PEACEMINUSONE)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('피치스 (Peaches)')">
+                피치스 (Peaches)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('하이츠 스토어 (Heights)')">
+                하이츠 스토어 (Heights)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('해칭룸 (Hatching Room)')">
+                해칭룸 (Hatching Room)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('핸더 스킴 (Hender Scheme)')">
+                핸더 스킴 (Hender Scheme)
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('헤리티지 플로스')">
+                헤리티지 플로스
+            </div>
+            <div class="brand-index-item" onclick="searchBrand('휴먼 메이드 (Human Made)')">
+                휴먼 메이드 (Human Made)
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer style="text-align: center; padding: 40px 20px 60px; color: var(--bronze); font-size: 0.85rem; border-top: 1px solid rgba(184, 149, 106, 0.15); margin-top: 30px;">
+        <p style="margin: 0 0 8px 0; letter-spacing: 0.05em;">© 2026 M·MALL INVITED</p>
+        <p style="margin: 0; opacity: 0.7; font-size: 0.8rem;">Curated Collection of Premium Brands</p>
+    </footer>
+    
+    </div>
+</div>
+        
+        </div>
+
+
+
+    </div>
+</div>
+    </div>
+</div>
+
+<div id="favorites" class="page"></div>
+<div id="philosophy" class="page"></div>
+<div id="visual" class="page"></div>
+<div id="scarcity" class="page"></div>
+<div id="narrative" class="page"></div>
+<div id="inspiration" class="page"></div>
+<div id="select_shop" class="page"></div>
+
+<!-- Floating Navigation -->
+<div class="floating-nav">
+    <div class="nav-menu" id="navMenu">
+        <div class="nav-item main" onclick="toggleNav(); setTimeout(() => showPage('index'), 100);">⌂ 메인으로</div>
+        <div class="nav-item favorites" onclick="toggleNav(); setTimeout(() => showPage('favorites'), 100);">♥ My Favorites</div>
+        <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('philosophy'), 100);">Philosophy</div>
+        <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('visual'), 100);">Visual</div>
+        <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('scarcity'), 100);">Scarcity</div>
+        <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('narrative'), 100);">Narrative</div>
+        <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('inspiration'), 100);">Inspiration</div>
+        <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('select_shop'), 100);">Select Shop</div>
+    </div>
+    <button class="nav-toggle" onclick="toggleNav()" id="navToggle">☰</button>
+</div>
+
+<script>
+let DATA = {};
+
+const INFO = {
+    favorites: {title: 'My Favorites', subtitle: '내가 좋아요한 브랜드들. 나만의 특별한 컬렉션.', count: 0},
+    philosophy: {title: 'Philosophy', subtitle: '철학과 신념으로 세상을 바꾸는 브랜드들. 지속가능성, 장인정신, 혁신적 사고가 만든 본질의 가치.', count: 39},
+    visual: {title: 'Visual', subtitle: '압도적인 비주얼로 시선을 사로잡는 브랜드들. 디자인 자체가 메시지이며, 예술이 되는 순간.', count: 27},
+    scarcity: {title: 'Scarcity', subtitle: '희소성이 만드는 가치. 없어서 못 사는 브랜드, 한정된 수량이 만드는 열광.', count: 34},
+    narrative: {title: 'Narrative', subtitle: '강력한 스토리텔링으로 감정을 움직이는 브랜드들. 제품 너머의 이야기가 팬덤을 만든다.', count: 26},
+    inspiration: {title: 'Inspiration', subtitle: '영감을 주는 공간과 경험. 방문 자체가 여정이 되는 곳, 삶의 방식을 제안하는 브랜드.', count: 24},
+    select_shop: {title: 'Select Shop', subtitle: '세상의 아름다움을 큐레이션하는 편집샵들. 안목과 취향이 만드는 새로운 세계.', count: 17}
+};
+
+// Favorites Management - Use Array to maintain order
+let favorites = JSON.parse(localStorage.getItem('mmall_favorites') || '[]');
+
+// Ensure favorites is always an array
+if (!Array.isArray(favorites)) {
+    favorites = [];
+    localStorage.setItem('mmall_favorites', '[]');
+}
+
+function saveFavorites() {
+    localStorage.setItem('mmall_favorites', JSON.stringify(favorites));
+    updateFavoriteCount();
+    updateAZFavorites();
+}
+
+function shareFavorites() {
+    if (favorites.length === 0) {
+        alert('좋아요한 브랜드가 없습니다.');
+        return;
+    }
+    
+    // 좋아요한 브랜드를 저장된 순서대로 사용
+    const favBrands = favorites;
+    
+    // 현재 날짜 및 시간
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    
+    // 공유 텍스트 생성
+    let shareText = 'M·MALL INVITED\n';
+    shareText += 'My Favorites\n\n';
+    shareText += `총 ${favBrands.length}개 브랜드\n\n`;
+    favBrands.forEach((brand, index) => {
+        shareText += `${index + 1}. ${brand}\n`;
+    });
+    shareText += `\n${dateStr} ${timeStr}`;
+    
+    // Web Share API 지원 여부 확인 (주로 모바일)
+    if (navigator.share) {
+        navigator.share({
+            title: 'M·MALL INVITED - My Favorites',
+            text: shareText
+        }).catch((error) => {
+            // 공유 취소는 무시
+            if (error.name !== 'AbortError') {
+                copyToClipboardFallback(shareText);
+            }
+        });
+    } else {
+        // Web Share API 미지원 시 클립보드 복사
+        copyToClipboardFallback(shareText);
+    }
+}
+
+function copyToClipboardFallback(text) {
+    // 방법 1: Clipboard API 시도
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                showButtonFeedback();
+            })
+            .catch(() => {
+                // 방법 2: textarea fallback (권한 거부 시)
+                copyUsingTextarea(text);
+            });
+    } else {
+        // 방법 2: textarea fallback
+        copyUsingTextarea(text);
+    }
+}
+
+function copyUsingTextarea(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showButtonFeedback();
+        } else {
+            alert('복사에 실패했습니다. 브라우저 설정을 확인해주세요.');
+        }
+    } catch (err) {
+        alert('복사에 실패했습니다. 브라우저 설정을 확인해주세요.');
+    }
+    
+    document.body.removeChild(textarea);
+}
+
+function showButtonFeedback() {
+    // 공유하기 버튼 찾기
+    const shareBtn = document.querySelector('.share-btn');
+    if (!shareBtn) return;
+    
+    // 원래 텍스트 저장
+    const originalText = shareBtn.textContent;
+    
+    // 버튼 텍스트 변경
+    shareBtn.textContent = 'List Copied';
+    shareBtn.style.color = 'var(--gold)';
+    shareBtn.style.borderColor = 'var(--gold)';
+    
+    // 1.5초 후 원래대로 복구
+    setTimeout(() => {
+        shareBtn.textContent = originalText;
+        shareBtn.style.color = '';
+        shareBtn.style.borderColor = '';
+    }, 1500);
+}
+
+function toggleFavorite(brandName, event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    
+    const isRemoving = favorites.includes(brandName);
+    
+    if (isRemoving) {
+        // Favorites 페이지에서 제거 시 애니메이션 효과
+        const favPage = document.getElementById('favorites');
+        if (favPage.classList.contains('active')) {
+            // 현재 스크롤 위치 저장
+            const currentScrollY = window.scrollY;
+            
+            // 해당 브랜드 카드 찾기
+            const cards = favPage.querySelectorAll('.brand-card');
+            let targetCard = null;
+            cards.forEach(card => {
+                const nameElem = card.querySelector('.brand-name');
+                if (nameElem && nameElem.textContent === brandName) {
+                    targetCard = card;
+                }
+            });
+            
+            if (targetCard) {
+                // 카드에 사라지는 애니메이션 추가
+                targetCard.style.animation = 'fadeOutScale 1s ease-in-out forwards';
+                targetCard.style.pointerEvents = 'none';
+                
+                // 애니메이션 완료 후 실제 제거
+                setTimeout(() => {
+                    // 배열에서 제거
+                    const index = favorites.indexOf(brandName);
+                    if (index > -1) {
+                        favorites.splice(index, 1);
+                    }
+                    saveFavorites();
+                    
+                    // 모든 페이지의 해당 브랜드 버튼 상태 업데이트
+                    document.querySelectorAll(`.favorite-btn[data-brand="${brandName.replace(/"/g, '&quot;')}"]`).forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // A-Z 인덱스 업데이트
+                    updateAZFavorites();
+                    
+                    // 스크롤 이벤트 리스너로 위치 강제 유지
+                    const preventScroll = () => {
+                        window.scrollTo(0, currentScrollY);
+                    };
+                    
+                    // 스크롤 방지
+                    window.addEventListener('scroll', preventScroll);
+                    
+                    // 페이지 재렌더링
+                    const brandsContainer = favPage.querySelector('.brands-grid');
+                    if (brandsContainer) {
+                        // 기존 카드만 제거하고 다시 그리기
+                        targetCard.remove();
+                        
+                        // 카운트 업데이트
+                        const countElem = favPage.querySelector('.brand-count');
+                        if (countElem) {
+                            countElem.textContent = `${favorites.length} BRANDS`;
+                        }
+                        
+                        // 좋아요 없으면 전체 리렌더
+                        if (favorites.length === 0) {
+                            showPage('favorites');
+                        }
+                    }
+                    
+                    // 스크롤 위치 복원 및 리스너 제거
+                    setTimeout(() => {
+                        window.removeEventListener('scroll', preventScroll);
+                        window.scrollTo(0, currentScrollY);
+                    }, 10);
+                }, 1000);
+                
+                return; // 여기서 함수 종료
+            }
+        }
+        
+        // Favorites 페이지가 아닌 경우 일반 처리
+        const index = favorites.indexOf(brandName);
+        if (index > -1) {
+            favorites.splice(index, 1);
+        }
+    } else {
+        // 배열 끝에 추가 (가장 최근에 추가된 순서)
+        favorites.push(brandName);
+    }
+    
+    saveFavorites();
+    
+    // Update all favorite buttons for this brand
+    document.querySelectorAll(`.favorite-btn[data-brand="${brandName.replace(/"/g, '&quot;')}"]`).forEach(btn => {
+        if (favorites.includes(brandName)) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    // Re-render favorites page if currently viewing (추가된 경우만)
+    const favPage = document.getElementById('favorites');
+    if (favPage.classList.contains('active') && !isRemoving) {
+        showPage('favorites');
+    }
+}
+
+function updateFavoriteCount() {
+    const countElem = document.getElementById('favCount');
+    const iconElem = document.getElementById('favIcon');
+    const heartElem = iconElem ? iconElem.querySelector('.fav-heart') : null;
+    
+    if (countElem) {
+        countElem.textContent = `${favorites.length} BRANDS →`;
+    }
+    
+    // Update icon state based on count
+    if (iconElem && heartElem) {
+        if (favorites.length > 0) {
+            iconElem.classList.add('active');
+            heartElem.textContent = '♥';
+        } else {
+            iconElem.classList.remove('active');
+            heartElem.textContent = '♡';
+        }
+    }
+}
+
+function updateAZFavorites() {
+    document.querySelectorAll('.brand-index-item').forEach(item => {
+        const brandName = item.textContent.trim();
+        if (favorites.includes(brandName)) {
+            item.classList.add('favorited');
+        } else {
+            item.classList.remove('favorited');
+        }
+    });
+}
+
+function showPage(cat) {
+    // 먼저 스크롤을 최상단으로 이동 (페이지 전환 전)
+    window.scrollTo({top: 0, behavior: 'instant'});
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    
+    if (cat === 'index') {
+        document.getElementById('index').classList.add('active');
+        updateFavoriteCount();
+        updateAZFavorites();
+        return;
+    }
+    
+    const page = document.getElementById(cat);
+    
+    // Favorites page - special handling (always re-render)
+    if (cat === 'favorites') {
+        // favorites 배열 순서대로 브랜드 정렬 (최근 추가가 맨 아래)
+        let favBrands = [];
+        
+        // favorites 배열의 각 브랜드명으로 DATA에서 찾기
+        favorites.forEach(brandName => {
+            for (const [category, brands] of Object.entries(DATA)) {
+                const brand = brands.find(b => b.name === brandName);
+                if (brand) {
+                    favBrands.push({...brand, category: category});
+                    break;
+                }
+            }
+        });
+        
+        const info = INFO[cat];
+        info.count = favBrands.length;
+        
+        let html = '<div class="header">';
+        html += '<button class="back-link" onclick="showPage(\'index\')">← 돌아가기</button>';
+        html += '<div class="logo">M·MALL INVITED</div>';
+        html += '</div>';
+        
+        html += '<div class="page-hero">';
+        html += '<h1 class="page-title">' + info.title + '</h1>';
+        html += '<p class="page-subtitle">' + info.subtitle + '</p>';
+        html += '<p class="brand-count">' + favBrands.length + ' BRANDS</p>';
+        if (favBrands.length > 0) {
+            html += '<button class="share-btn" onclick="shareFavorites()">공유하기</button>';
+        }
+        html += '</div>';
+        
+        if (favBrands.length === 0) {
+            html += '<div style="text-align: center; padding: 100px 20px; color: var(--bronze);">';
+            html += '<p style="font-size: 3rem; margin-bottom: 20px;">🤍</p>';
+            html += '<p style="font-size: 1.1rem; margin-bottom: 10px;">아직 좋아요한 브랜드가 없습니다</p>';
+            html += '<p style="font-size: 0.9rem; opacity: 0.7;">브랜드 카드의 🤍 버튼을 눌러 저장해보세요</p>';
+            html += '</div>';
+        } else {
+            html += '<div class="brands-grid">';
+            favBrands.forEach((b, index) => {
+                html += '<div class="brand-card" style="animation-delay: ' + (index * 0.05) + 's">';
+                const isFav = favorites.includes(b.name);
+                html += '<button class="favorite-btn' + (isFav ? ' active' : '') + '" data-brand="' + b.name.replace(/"/g, '&quot;') + '" onclick="toggleFavorite(\'' + b.name.replace(/'/g, "\\'") + '\', event)"></button>';
+                html += '<div class="brand-meta">';
+                html += '<span class="brand-country">' + b.country + '</span>';
+                html += '</div>';
+                html += '<div class="brand-number">' + b.no + '</div>';
+                html += '<h2 class="brand-name">' + b.name + '</h2>';
+                html += '<p class="brand-headline">' + b.headline + '</p>';
+                html += '<p class="brand-definition">' + b.definition + '</p>';
+                html += '<p class="brand-description">' + b.description + '</p>';
+                html += '<a href="https://www.google.com/search?q=' + encodeURIComponent(b.name + ' 왜 인기있어?') + '" target="_blank" rel="noopener noreferrer" class="brand-link">Googling →</a>';
+                html += '</div>';
+            });
+            html += '</div>';
+        }
+        
+        html += '<footer>© 2026 M·MALL INVITED · MY FAVORITES</footer>';
+        
+        // Always update favorites page content
+        page.innerHTML = html;
+        page.classList.add('active');
+        
+        // Scroll to top
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        }, 0);
+        return;
+    }
+    
+    // Regular category pages
+    if (page.innerHTML === '') {
+        const info = INFO[cat];
+        const brands = DATA[cat];
+        
+        let html = '<div class="header">';
+        html += '<button class="back-link" onclick="showPage(\'index\')">← 돌아가기</button>';
+        html += '<div class="logo">M·MALL INVITED</div>';
+        html += '</div>';
+        
+        html += '<div class="page-hero">';
+        html += '<h1 class="page-title">' + info.title + '</h1>';
+        html += '<p class="page-subtitle">' + info.subtitle + '</p>';
+        html += '<p class="brand-count">' + info.count + ' BRANDS</p>';
+        html += '</div>';
+        
+        html += '<div class="brands-grid">';
+        
+        brands.forEach((b, index) => {
+            html += '<div class="brand-card" style="animation-delay: ' + (index * 0.05) + 's">';
+            const isFav = favorites.includes(b.name);
+            html += '<button class="favorite-btn' + (isFav ? ' active' : '') + '" data-brand="' + b.name.replace(/"/g, '&quot;') + '" onclick="toggleFavorite(\'' + b.name.replace(/'/g, "\\'") + '\', event)"></button>';
+            html += '<div class="brand-meta">';
+            html += '<span class="brand-country">' + b.country + '</span>';
+            html += '</div>';
+            html += '<div class="brand-number">' + b.no + '</div>';
+            html += '<h2 class="brand-name">' + b.name + '</h2>';
+            html += '<p class="brand-headline">' + b.headline + '</p>';
+            html += '<p class="brand-definition">' + b.definition + '</p>';
+            html += '<p class="brand-description">' + b.description + '</p>';
+            html += '<a href="https://www.google.com/search?q=' + encodeURIComponent(b.name + ' 왜 인기있어?') + '" target="_blank" rel="noopener noreferrer" class="brand-link">Googling →</a>';
+            html += '</div>';
+        });
+        
+        html += '</div>';
+        html += '<footer>© 2026 M·MALL INVITED · ' + info.title.toUpperCase() + '</footer>';
+        
+        page.innerHTML = html;
+    }
+    
+    page.classList.add('active');
+    
+    // 페이지 활성화 후 다시 한번 최상단으로 강제 이동
+    requestAnimationFrame(() => {
+        window.scrollTo({top: 0, behavior: 'instant'});
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+    });
+    
+    // 확실하게 한번 더
+    setTimeout(() => {
+        window.scrollTo({top: 0, behavior: 'instant'});
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+    }, 0);
+}
+
+function toggleNav() {
+    const menu = document.getElementById('navMenu');
+    const toggle = document.getElementById('navToggle');
+    
+    if (menu.classList.contains('active')) {
+        menu.classList.remove('active');
+        toggle.textContent = '☰';
+    } else {
+        menu.classList.add('active');
+        toggle.textContent = '✕';
+    }
+}
+
+// Search functionality
+let allBrands = [];
+
+// Build searchable brand list from DATA
+function buildBrandIndex() {
+    console.log('Building brand index...');
+    allBrands = [];
+    const categoryNames = {
+        'philosophy': 'Philosophy',
+        'visual': 'Visual',
+        'scarcity': 'Scarcity',
+        'narrative': 'Narrative',
+        'inspiration': 'Inspiration',
+        'select_shop': 'Select Shop'
+    };
+    
+    for (const [category, brands] of Object.entries(DATA)) {
+        brands.forEach(brand => {
+            allBrands.push({
+                name: brand.name,
+                category: category,
+                categoryDisplay: categoryNames[category],
+                country: brand.country,
+                headline: brand.headline,
+                definition: brand.definition
+            });
+        });
+    }
+    console.log('Brand index built. Total brands:', allBrands.length);
+}
+
+function searchBrands(query) {
+    console.log('searchBrands called with:', query);
+    
+    if (!query || query.length < 1) {
+        const resultsDiv = document.getElementById('searchResults');
+        if (resultsDiv) resultsDiv.classList.remove('active');
+        return;
+    }
+    
+    const searchLower = query.toLowerCase();
+    const results = allBrands.filter(brand => 
+        brand.name.toLowerCase().includes(searchLower) ||
+        brand.headline.toLowerCase().includes(searchLower) ||
+        brand.definition.toLowerCase().includes(searchLower) ||
+        brand.country.toLowerCase().includes(searchLower)
+    ).slice(0, 10);
+    
+    console.log('Found results:', results.length);
+    
+    const resultsDiv = document.getElementById('searchResults');
+    if (!resultsDiv) {
+        console.error('searchResults div not found!');
+        return;
+    }
+    
+    if (results.length === 0) {
+        resultsDiv.innerHTML = '<div style="padding: 20px; text-align: center; color: #8B7355;">검색 결과가 없습니다</div>';
+        resultsDiv.classList.add('active');
+        return;
+    }
+    
+    let html = '';
+    results.forEach(brand => {
+        html += `
+            <div class="search-result-item" onclick="goToBrand('${brand.category}', '${brand.name.replace(/'/g, "\\'")}')">
+                <div class="search-result-name">${brand.name}</div>
+                <div class="search-result-meta">${brand.categoryDisplay} · ${brand.country}</div>
+            </div>
+        `;
+    });
+    
+    resultsDiv.innerHTML = html;
+    resultsDiv.classList.add('active');
+    console.log('Search results displayed');
+}
+
+function searchBrand(brandName) {
+    // A-Z 인덱스에서 클릭 시 해당 브랜드 찾아서 바로 이동
+    const brand = allBrands.find(b => b.name === brandName);
+    
+    if (brand) {
+        // 바로 해당 카테고리 페이지로 이동
+        goToBrand(brand.category, brand.name);
+    }
+}
+
+function goToBrand(category, brandName) {
+    // 해당 카테고리 페이지로 이동
+    showPage(category);
+    
+    // 검색 결과 닫기
+    const searchResults = document.getElementById('searchResults');
+    const searchInput = document.getElementById('brandSearch');
+    if (searchResults) searchResults.classList.remove('active');
+    if (searchInput) searchInput.value = '';
+    
+    // 약간의 딜레이 후 해당 브랜드로 스크롤
+    setTimeout(() => {
+        const brandCards = document.querySelectorAll('.brand-name');
+        for (const card of brandCards) {
+            if (card.textContent.trim() === brandName.trim()) {
+                const brandCard = card.closest('.brand-card');
+                if (brandCard) {
+                    brandCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // 하이라이트 효과
+                    brandCard.style.backgroundColor = 'rgba(184, 149, 106, 0.1)';
+                    setTimeout(() => {
+                        brandCard.style.backgroundColor = '';
+                    }, 2000);
+                }
+                break;
+            }
+        }
+    }, 500);
+}
+
+// Initialize search on page load
+window.addEventListener('DOMContentLoaded', function() {
+    fetch('brands.json')
+        .then(function(res) { return res.json(); })
+        .then(function(json) {
+            DATA = json;
+            // INFO 카운트를 실제 데이터 기준으로 갱신
+            for (var cat in DATA) {
+                if (INFO[cat]) INFO[cat].count = DATA[cat].length;
+            }
+            buildBrandIndex();
+            updateFavoriteCount();
+            updateAZFavorites();
+        })
+        .catch(function(err) {
+            console.error('brands.json 로드 실패:', err);
+        });
+
+    const searchInput = document.getElementById('brandSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            searchBrands(e.target.value);
+        });
+    }
+
+    // Click outside to close search results
+    document.addEventListener('click', function(e) {
+        const searchSection = document.querySelector('.search-section-main');
+        const searchResults = document.getElementById('searchResults');
+        if (searchSection && searchResults && !searchSection.contains(e.target)) {
+            searchResults.classList.remove('active');
+        }
+    });
+});
+
+// Close menu when clicking outside
+document.addEventListener('click', function(event) {
+    const nav = document.querySelector('.floating-nav');
+    const menu = document.getElementById('navMenu');
+    
+    if (!nav.contains(event.target) && menu.classList.contains('active')) {
+        menu.classList.remove('active');
+        document.getElementById('navToggle').textContent = '☰';
+    }
+});
+</script>
+</body>
+</html>
