@@ -1441,9 +1441,6 @@ footer {
     letter-spacing: 0.04em;
 }
 .delete-brand-btn {
-    position: absolute;
-    top: 10px;
-    left: 10px;
     width: 26px;
     height: 26px;
     background: rgba(255,255,255,0.92);
@@ -1456,11 +1453,81 @@ footer {
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    z-index: 2;
     padding: 0;
     line-height: 1;
+    flex-shrink: 0;
 }
 .delete-brand-btn:hover { background: #e74c3c; color: white; border-color: #e74c3c; }
+.archive-card-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+.archive-card-top .brand-meta {
+    flex: 1;
+    margin: 0;
+}
+.archive-card-top .favorite-btn {
+    position: static;
+    transform: none;
+    flex-shrink: 0;
+}
+.move-to-category-btn {
+    display: inline-block;
+    font-size: 0.76rem;
+    color: var(--bronze);
+    background: none;
+    border: 1px solid rgba(184,149,106,0.25);
+    border-radius: 2px;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-top: 10px;
+    letter-spacing: 0.03em;
+    transition: all 0.2s;
+}
+.move-to-category-btn:hover { border-color: var(--gold); color: var(--gold); }
+.archive-selector {
+    background: var(--warm-white);
+    border: 1px solid rgba(184,149,106,0.25);
+    border-radius: 2px;
+    padding: 12px 14px;
+    margin-top: 10px;
+}
+.archive-selector p {
+    font-size: 0.76rem;
+    color: var(--bronze);
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.archive-selector button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 7px 0;
+    background: none;
+    border: none;
+    border-bottom: 1px solid rgba(184,149,106,0.12);
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--charcoal);
+    font-family: 'Noto Serif KR', serif;
+    transition: color 0.15s;
+}
+.archive-selector button:last-child { border-bottom: none; color: var(--bronze); font-size: 0.76rem; }
+.archive-selector button:hover { color: var(--gold); }
+.archived-badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    color: var(--gold);
+    border: 1px solid rgba(184,149,106,0.4);
+    border-radius: 2px;
+    padding: 2px 6px;
+    margin-left: 6px;
+    letter-spacing: 0.04em;
+    vertical-align: middle;
+}
 .brand-category-tag {
     font-size: 0.7rem;
     color: var(--gold);
@@ -2381,6 +2448,61 @@ function saveCustomBrands() {
     localStorage.setItem('mmall_custom_brands', JSON.stringify(customBrands));
 }
 
+function addCustomBrandsToAZList() {
+    var list = document.getElementById('brandIndexList');
+    if (!list) return;
+    list.querySelectorAll('.az-custom').forEach(function(el) { el.remove(); });
+    customBrands.forEach(function(brand) {
+        var div = document.createElement('div');
+        div.className = 'brand-index-item az-custom';
+        if (favorites.includes(brand.name)) div.classList.add('favorited');
+        div.textContent = brand.name;
+        var safeName = brand.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        div.setAttribute('onclick', "searchBrand('" + safeName + "')");
+        list.appendChild(div);
+    });
+}
+
+function showArchiveSelector(id) {
+    var card = document.querySelector('[data-custom-id="' + id + '"]');
+    if (!card) return;
+    var existing = card.querySelector('.archive-selector');
+    if (existing) { existing.remove(); return; }
+    var cats = [
+        {key:'philosophy', label:'Philosophy'},
+        {key:'visual', label:'Visual'},
+        {key:'scarcity', label:'Scarcity'},
+        {key:'narrative', label:'Narrative'},
+        {key:'inspiration', label:'Inspiration'},
+        {key:'select_shop', label:'Select Shop'}
+    ];
+    var div = document.createElement('div');
+    div.className = 'archive-selector';
+    div.innerHTML = '<p>이동할 카테고리 선택</p>' +
+        cats.map(function(c) {
+            return '<button onclick="archiveBrandToCategory(\'' + id + '\',\'' + c.key + '\')">' + c.label + '</button>';
+        }).join('') +
+        '<button onclick="this.closest(\'.archive-selector\').remove()">취소</button>';
+    card.appendChild(div);
+}
+
+function archiveBrandToCategory(id, category) {
+    var idx = customBrands.findIndex(function(b) { return b.id === id; });
+    if (idx === -1) return;
+    customBrands[idx].archivedCategory = category;
+    saveCustomBrands();
+    if (!DATA[category]) DATA[category] = [];
+    var alreadyIn = DATA[category].some(function(b) { return b.name === customBrands[idx].name; });
+    if (!alreadyIn) DATA[category].push(Object.assign({}, customBrands[idx], {category: category}));
+    var ab = allBrands.find(function(b) { return b.name === customBrands[idx].name; });
+    if (ab) { ab.category = category; ab.categoryDisplay = getCategoryDisplayName(category); }
+    var catPage = document.getElementById(category);
+    if (catPage) catPage.innerHTML = '';
+    var archivePage = document.getElementById('my_archive');
+    if (archivePage) archivePage.innerHTML = '';
+    if (document.getElementById('my_archive').classList.contains('active')) showPage('my_archive');
+}
+
 function updateArchiveCount() {
     const el = document.getElementById('archiveCount');
     if (el) el.textContent = customBrands.length + ' BRANDS →';
@@ -2565,6 +2687,7 @@ function saveGeneratedBrand() {
     });
 
     updateArchiveCount();
+    addCustomBrandsToAZList();
     closeCreateModal();
 
     const archivePage = document.getElementById('my_archive');
@@ -2597,6 +2720,7 @@ function deleteCustomBrand(id, event) {
     allBrands = allBrands.filter(function(b) { return !(b.name === brandName && b.category === 'my_archive'); });
 
     updateArchiveCount();
+    addCustomBrandsToAZList();
     const archivePage = document.getElementById('my_archive');
     if (archivePage) archivePage.innerHTML = '';
     if (document.getElementById('my_archive').classList.contains('active')) {
@@ -2609,16 +2733,23 @@ function loadCustomBrandsIntoData() {
     if (!DATA.my_archive) DATA.my_archive = [];
     DATA.my_archive = customBrands.slice();
     customBrands.forEach(function(brand) {
+        var cat = brand.archivedCategory || 'my_archive';
         allBrands.push({
             name: brand.name,
-            category: 'my_archive',
-            categoryDisplay: 'My Archive',
+            category: cat,
+            categoryDisplay: cat === 'my_archive' ? 'My Archive' : getCategoryDisplayName(cat),
             country: brand.country,
             headline: brand.headline,
             definition: brand.definition
         });
+        if (brand.archivedCategory) {
+            if (!DATA[brand.archivedCategory]) DATA[brand.archivedCategory] = [];
+            var exists = DATA[brand.archivedCategory].some(function(b) { return b.name === brand.name; });
+            if (!exists) DATA[brand.archivedCategory].push(Object.assign({}, brand, {category: brand.archivedCategory}));
+        }
     });
     updateArchiveCount();
+    addCustomBrandsToAZList();
 }
 
 // Favorites Management - Use Array to maintain order
@@ -3001,11 +3132,15 @@ function showPage(cat) {
                 const safeName = b.name.replace(/'/g, "\\'");
                 const escapedName = b.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 const quotedName = b.name.replace(/"/g, '&quot;');
-                html += '<div class="brand-card" style="animation-delay:' + (index * 0.05) + 's;position:relative;">';
-                html += '<button class="favorite-btn' + (isFav ? ' active' : '') + '" data-brand="' + quotedName + '" onclick="toggleFavorite(\'' + safeName + '\', event)"></button>';
+                html += '<div class="brand-card" style="animation-delay:' + (index * 0.05) + 's;" data-custom-id="' + b.id + '">';
+                html += '<div class="archive-card-top">';
                 html += '<button class="delete-brand-btn" onclick="deleteCustomBrand(\'' + safeId + '\', event)" title="삭제">✕</button>';
                 html += '<div class="brand-meta"><span class="brand-country">' + (b.country || '') + '</span>';
-                html += '<span class="brand-category-tag">' + getCategoryDisplayName(b.category) + '</span></div>';
+                html += '<span class="brand-category-tag">' + getCategoryDisplayName(b.archivedCategory || b.category) + '</span>';
+                if (b.archivedCategory) html += '<span class="archived-badge">이동됨</span>';
+                html += '</div>';
+                html += '<button class="favorite-btn' + (isFav ? ' active' : '') + '" data-brand="' + quotedName + '" onclick="toggleFavorite(\'' + safeName + '\', event)"></button>';
+                html += '</div>';
                 html += '<div class="brand-number">' + b.no + '</div>';
                 html += '<h2 class="brand-name">' + escapedName + '</h2>';
                 html += '<p class="brand-headline">' + (b.headline || '') + '</p>';
@@ -3013,6 +3148,7 @@ function showPage(cat) {
                 html += '<p class="brand-description">' + (b.description || '') + '</p>';
                 html += '<p class="archived-date">' + (b.createdAt || '') + ' 아카이빙</p>';
                 html += '<a href="https://www.google.com/search?q=' + encodeURIComponent(b.name + ' 왜 인기있어?') + '" target="_blank" rel="noopener noreferrer" class="brand-link">Googling →</a>';
+                html += '<button class="move-to-category-btn" onclick="showArchiveSelector(\'' + safeId + '\')">→ 카테고리로 이동</button>';
                 html += '</div>';
             });
             html += '</div>';
