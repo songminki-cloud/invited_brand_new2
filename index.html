@@ -2320,8 +2320,8 @@ const API_PROVIDERS = {
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: prompt }] }],
                     generationConfig: {
-                        maxOutputTokens: 1024,
-                        thinkingConfig: { thinkingBudget: 0 }
+                        maxOutputTokens: 2048,
+                        responseMimeType: 'application/json'
                     }
                 })
             });
@@ -2331,8 +2331,8 @@ const API_PROVIDERS = {
             }
             const data = await res.json();
             const parts = data.candidates[0].content.parts;
-            const responseParts = parts.filter(function(p) { return !p.thought; });
-            return (responseParts.length > 0 ? responseParts : parts).map(function(p) { return p.text || ''; }).join('\n');
+            return parts.filter(function(p) { return !p.thought; }).map(function(p) { return p.text || ''; }).join('') ||
+                   parts.map(function(p) { return p.text || ''; }).join('');
         }
     },
     openai: {
