@@ -1582,6 +1582,54 @@ footer {
     opacity: 0.65;
     letter-spacing: 0.03em;
 }
+.brand-edit-btn {
+    position: absolute;
+    bottom: 18px;
+    right: 18px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.68rem;
+    color: rgba(184,149,106,0.45);
+    font-family: 'Playfair Display', serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+    padding: 0;
+}
+.brand-edit-btn:hover { color: var(--gold); }
+.edit-desc-btn {
+    width: 100%;
+    padding: 9px;
+    background: var(--warm-white);
+    color: var(--bronze);
+    border: 1px solid rgba(184,149,106,0.3);
+    cursor: pointer;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 0.82rem;
+    border-radius: 2px;
+    margin-top: 6px;
+    transition: all 0.2s;
+    text-align: left;
+}
+.edit-desc-btn:hover { border-color: var(--gold); color: var(--gold); }
+.edit-desc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.form-textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid rgba(184,149,106,0.3);
+    background: var(--warm-white);
+    color: var(--charcoal);
+    font-family: 'Noto Serif KR', serif;
+    font-size: 0.88rem;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: vertical;
+    line-height: 1.7;
+    min-height: 120px;
+}
+.form-textarea:focus { border-color: var(--gold); }
 @media (max-width: 768px) {
     .modal-overlay { padding: 20px 16px; }
     .modal-box { padding: 28px 22px; }
@@ -2320,6 +2368,40 @@ footer {
     </div>
 </div>
 
+<!-- Brand Edit Modal -->
+<div class="modal-overlay" id="editBrandModal" onclick="if(event.target===this)closeEditModal()">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeEditModal()">✕</button>
+        <h2 class="modal-title">Brand Edit</h2>
+        <p class="modal-subtitle">브랜드 정보를 수정하고 AI로 재작성할 수 있습니다</p>
+
+        <div class="form-group">
+            <label class="form-label">Brand Name</label>
+            <input type="text" class="form-input" id="editBrandName">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Headline (영문 태그라인)</label>
+            <input type="text" class="form-input" id="editHeadline">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Definition (한 줄 정의)</label>
+            <input type="text" class="form-input" id="editDefinition">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Description (소개글)</label>
+            <textarea class="form-textarea" id="editDescription"></textarea>
+            <button class="edit-desc-btn" id="regenDescBtn" onclick="regenerateDescription(this)">↺ AI로 소개글 재작성</button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Homepage URL</label>
+            <input type="url" class="form-input" id="editHomepage" placeholder="https://...">
+            <button class="edit-desc-btn" id="findHpBtn" onclick="findHomepageAI(this)">↺ AI로 홈페이지 찾기</button>
+        </div>
+
+        <button class="save-btn" style="display:block;" onclick="saveEditedBrand()">저장</button>
+    </div>
+</div>
+
 <script>
 let DATA = {};
 
@@ -2336,6 +2418,163 @@ const INFO = {
 // Custom archive brands
 let customBrands = JSON.parse(localStorage.getItem('mmall_custom_brands') || '[]');
 let pendingBrandData = null;
+
+// Brand overrides (edits applied to any brand, stored in localStorage)
+let brandOverrides = JSON.parse(localStorage.getItem('mmall_brand_overrides') || '{}');
+
+function saveBrandOverrides() {
+    localStorage.setItem('mmall_brand_overrides', JSON.stringify(brandOverrides));
+}
+
+function applyOverrides(brand) {
+    var ov = brandOverrides[brand.name];
+    return ov ? Object.assign({}, brand, ov) : brand;
+}
+
+// Shared card renderer used by all pages
+function makeBrandCardHTML(b, index, cat, isCustom) {
+    var bd = applyOverrides(b);
+    var isFav = favorites.includes(b.name);
+    var safeName = b.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    var quotedName = b.name.replace(/"/g, '&quot;');
+    var escapedName = (bd.name||b.name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    var hp = (brandOverrides[b.name] && brandOverrides[b.name].homepage) || '';
+    var hpHref = hp ? hp.replace(/"/g,'&quot;') :
+        'https://www.google.com/search?q=' + encodeURIComponent(b.name + ' official website');
+    var safeCat = (cat || '').replace(/'/g, "\\'");
+
+    var html = '<div class="brand-card" style="animation-delay:' + (index*0.05) + 's;"';
+    if (isCustom) html += ' data-custom-id="' + (b.id||'').replace(/"/g,'&quot;') + '"';
+    html += '>';
+
+    if (isCustom) {
+        var safeId = (b.id||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        html += '<div class="archive-card-top">';
+        html += '<button class="delete-brand-btn" onclick="deleteCustomBrand(\'' + safeId + '\',event)" title="삭제">✕</button>';
+        html += '<div class="brand-meta"><span class="brand-country">' + (bd.country||'') + '</span>';
+        html += '<span class="brand-category-tag">' + getCategoryDisplayName(b.archivedCategory||b.category) + '</span>';
+        if (b.archivedCategory) html += '<span class="archived-badge">이동됨</span>';
+        html += '</div>';
+        html += '<button class="favorite-btn' + (isFav?' active':'') + '" data-brand="' + quotedName + '" onclick="toggleFavorite(\'' + safeName + '\',event)"></button>';
+        html += '</div>';
+    } else {
+        html += '<button class="favorite-btn' + (isFav?' active':'') + '" data-brand="' + quotedName + '" onclick="toggleFavorite(\'' + safeName + '\',event)"></button>';
+        html += '<div class="brand-meta"><span class="brand-country">' + (bd.country||b.country||'') + '</span></div>';
+    }
+
+    html += '<h2 class="brand-name">' + escapedName + '</h2>';
+    html += '<p class="brand-headline">' + (bd.headline||'') + '</p>';
+    html += '<p class="brand-definition">' + (bd.definition||'') + '</p>';
+    html += '<p class="brand-description">' + (bd.description||'') + '</p>';
+    if (isCustom) html += '<p class="archived-date">' + (b.createdAt||'') + ' 아카이빙</p>';
+    html += '<a href="' + hpHref + '" target="_blank" rel="noopener noreferrer" class="brand-link">Homepage →</a>';
+    html += '<button class="brand-edit-btn" onclick="openEditModal(\'' + safeName + '\',\'' + safeCat + '\')">Edit</button>';
+    if (isCustom) {
+        var safeId2 = (b.id||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        html += '<button class="move-to-category-btn" onclick="showArchiveSelector(\'' + safeId2 + '\')">→ 카테고리로 이동</button>';
+    }
+    html += '</div>';
+    return html;
+}
+
+// ── Edit Modal ────────────────────────────────────────────────────────────────
+let currentEditingBrandName = null;
+let currentEditingCategory = null;
+
+function openEditModal(brandName, category) {
+    currentEditingBrandName = brandName;
+    currentEditingCategory = category;
+    var brandData = null;
+    for (var cat in DATA) {
+        if (DATA[cat]) {
+            var found = DATA[cat].find(function(b) { return b.name === brandName; });
+            if (found) { brandData = found; break; }
+        }
+    }
+    if (!brandData) return;
+    var bd = applyOverrides(brandData);
+    document.getElementById('editBrandName').value = bd.name || '';
+    document.getElementById('editHeadline').value = bd.headline || '';
+    document.getElementById('editDefinition').value = bd.definition || '';
+    document.getElementById('editDescription').value = bd.description || '';
+    document.getElementById('editHomepage').value = (brandOverrides[brandName] && brandOverrides[brandName].homepage) || '';
+    document.getElementById('editBrandModal').classList.add('active');
+    setTimeout(function() { document.getElementById('editBrandName').focus(); }, 120);
+}
+
+function closeEditModal() {
+    document.getElementById('editBrandModal').classList.remove('active');
+    currentEditingBrandName = null;
+    currentEditingCategory = null;
+}
+
+async function regenerateDescription(btn) {
+    if (!currentEditingBrandName) return;
+    var provider = API_PROVIDERS[selectedProvider];
+    var apiKey = localStorage.getItem(provider.storageKey) || '';
+    if (!apiKey) { openApiKeyModal(); return; }
+    var name = document.getElementById('editBrandName').value.trim() || currentEditingBrandName;
+    var orig = btn.textContent;
+    btn.textContent = '생성 중...'; btn.disabled = true;
+    try {
+        var prompt = '패션/라이프스타일 브랜드 "' + name + '"에 대한 한국어 소개글을 150-250자로 작성해주세요. 브랜드 역사, 철학, 특징, 주목받는 이유를 서술형으로 작성하세요. 소개글 텍스트만 답하세요.';
+        var content = await provider.call(apiKey, prompt);
+        document.getElementById('editDescription').value = content.trim().replace(/^["']|["']$/g,'');
+    } catch(e) { alert('오류: ' + e.message); }
+    btn.textContent = orig; btn.disabled = false;
+}
+
+async function findHomepageAI(btn) {
+    if (!currentEditingBrandName) return;
+    var provider = API_PROVIDERS[selectedProvider];
+    var apiKey = localStorage.getItem(provider.storageKey) || '';
+    if (!apiKey) { openApiKeyModal(); return; }
+    var name = document.getElementById('editBrandName').value.trim() || currentEditingBrandName;
+    var orig = btn.textContent;
+    btn.textContent = '찾는 중...'; btn.disabled = true;
+    try {
+        var prompt = '패션/라이프스타일 브랜드 "' + name + '"의 공식 홈페이지 URL을 알려주세요. https://로 시작하는 URL 하나만 답해주세요. 다른 텍스트 없이 URL만.';
+        var content = await provider.call(apiKey, prompt);
+        var urlMatch = content.match(/https?:\/\/[^\s\n"'<>]+/);
+        if (urlMatch) {
+            document.getElementById('editHomepage').value = urlMatch[0].replace(/[.,;)>]+$/, '');
+        } else {
+            alert('홈페이지를 찾지 못했습니다. 직접 입력해주세요.');
+        }
+    } catch(e) { alert('오류: ' + e.message); }
+    btn.textContent = orig; btn.disabled = false;
+}
+
+function saveEditedBrand() {
+    if (!currentEditingBrandName) return;
+    var ov = {
+        name: document.getElementById('editBrandName').value.trim(),
+        headline: document.getElementById('editHeadline').value.trim(),
+        definition: document.getElementById('editDefinition').value.trim(),
+        description: document.getElementById('editDescription').value.trim(),
+        homepage: document.getElementById('editHomepage').value.trim()
+    };
+    Object.keys(ov).forEach(function(k) { if (!ov[k]) delete ov[k]; });
+    brandOverrides[currentEditingBrandName] = ov;
+    saveBrandOverrides();
+    // Update customBrands if applicable
+    var ci = customBrands.findIndex(function(b) { return b.name === currentEditingBrandName; });
+    if (ci !== -1) { Object.assign(customBrands[ci], ov); saveCustomBrands(); }
+    // Update DATA runtime
+    for (var cat in DATA) {
+        if (DATA[cat]) {
+            var bi = DATA[cat].findIndex(function(b) { return b.name === currentEditingBrandName; });
+            if (bi !== -1) Object.assign(DATA[cat][bi], ov);
+        }
+    }
+    // Clear all page caches
+    ['favorites','philosophy','visual','scarcity','narrative','inspiration','select_shop','my_archive'].forEach(function(p) {
+        var pg = document.getElementById(p); if (pg) pg.innerHTML = '';
+    });
+    closeEditModal();
+    var active = document.querySelector('.page.active');
+    if (active && active.id !== 'index') showPage(active.id);
+}
 
 // ── AI Provider Configurations ──────────────────────────────────────────────
 const API_PROVIDERS = {
@@ -3071,19 +3310,7 @@ function showPage(cat) {
         } else {
             html += '<div class="brands-grid">';
             favBrands.forEach((b, index) => {
-                html += '<div class="brand-card" style="animation-delay: ' + (index * 0.05) + 's">';
-                const isFav = favorites.includes(b.name);
-                html += '<button class="favorite-btn' + (isFav ? ' active' : '') + '" data-brand="' + b.name.replace(/"/g, '&quot;') + '" onclick="toggleFavorite(\'' + b.name.replace(/'/g, "\\'") + '\', event)"></button>';
-                html += '<div class="brand-meta">';
-                html += '<span class="brand-country">' + b.country + '</span>';
-                html += '</div>';
-                html += '<div class="brand-number">' + b.no + '</div>';
-                html += '<h2 class="brand-name">' + b.name + '</h2>';
-                html += '<p class="brand-headline">' + b.headline + '</p>';
-                html += '<p class="brand-definition">' + b.definition + '</p>';
-                html += '<p class="brand-description">' + b.description + '</p>';
-                html += '<a href="https://www.google.com/search?q=' + encodeURIComponent(b.name + ' 왜 인기있어?') + '" target="_blank" rel="noopener noreferrer" class="brand-link">Googling →</a>';
-                html += '</div>';
+                html += makeBrandCardHTML(b, index, b.category, false);
             });
             html += '</div>';
         }
@@ -3127,29 +3354,7 @@ function showPage(cat) {
         } else {
             html += '<div class="brands-grid">';
             customBrands.forEach(function(b, index) {
-                const isFav = favorites.includes(b.name);
-                const safeId = b.id.replace(/'/g, "\\'");
-                const safeName = b.name.replace(/'/g, "\\'");
-                const escapedName = b.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                const quotedName = b.name.replace(/"/g, '&quot;');
-                html += '<div class="brand-card" style="animation-delay:' + (index * 0.05) + 's;" data-custom-id="' + b.id + '">';
-                html += '<div class="archive-card-top">';
-                html += '<button class="delete-brand-btn" onclick="deleteCustomBrand(\'' + safeId + '\', event)" title="삭제">✕</button>';
-                html += '<div class="brand-meta"><span class="brand-country">' + (b.country || '') + '</span>';
-                html += '<span class="brand-category-tag">' + getCategoryDisplayName(b.archivedCategory || b.category) + '</span>';
-                if (b.archivedCategory) html += '<span class="archived-badge">이동됨</span>';
-                html += '</div>';
-                html += '<button class="favorite-btn' + (isFav ? ' active' : '') + '" data-brand="' + quotedName + '" onclick="toggleFavorite(\'' + safeName + '\', event)"></button>';
-                html += '</div>';
-                html += '<div class="brand-number">' + b.no + '</div>';
-                html += '<h2 class="brand-name">' + escapedName + '</h2>';
-                html += '<p class="brand-headline">' + (b.headline || '') + '</p>';
-                html += '<p class="brand-definition">' + (b.definition || '') + '</p>';
-                html += '<p class="brand-description">' + (b.description || '') + '</p>';
-                html += '<p class="archived-date">' + (b.createdAt || '') + ' 아카이빙</p>';
-                html += '<a href="https://www.google.com/search?q=' + encodeURIComponent(b.name + ' 왜 인기있어?') + '" target="_blank" rel="noopener noreferrer" class="brand-link">Googling →</a>';
-                html += '<button class="move-to-category-btn" onclick="showArchiveSelector(\'' + safeId + '\')">→ 카테고리로 이동</button>';
-                html += '</div>';
+                html += makeBrandCardHTML(b, index, 'my_archive', true);
             });
             html += '</div>';
         }
@@ -3182,23 +3387,11 @@ function showPage(cat) {
         html += '</div>';
         
         html += '<div class="brands-grid">';
-        
+
         brands.forEach((b, index) => {
-            html += '<div class="brand-card" style="animation-delay: ' + (index * 0.05) + 's">';
-            const isFav = favorites.includes(b.name);
-            html += '<button class="favorite-btn' + (isFav ? ' active' : '') + '" data-brand="' + b.name.replace(/"/g, '&quot;') + '" onclick="toggleFavorite(\'' + b.name.replace(/'/g, "\\'") + '\', event)"></button>';
-            html += '<div class="brand-meta">';
-            html += '<span class="brand-country">' + b.country + '</span>';
-            html += '</div>';
-            html += '<div class="brand-number">' + b.no + '</div>';
-            html += '<h2 class="brand-name">' + b.name + '</h2>';
-            html += '<p class="brand-headline">' + b.headline + '</p>';
-            html += '<p class="brand-definition">' + b.definition + '</p>';
-            html += '<p class="brand-description">' + b.description + '</p>';
-            html += '<a href="https://www.google.com/search?q=' + encodeURIComponent(b.name + ' 왜 인기있어?') + '" target="_blank" rel="noopener noreferrer" class="brand-link">Googling →</a>';
-            html += '</div>';
+            html += makeBrandCardHTML(b, index, cat, false);
         });
-        
+
         html += '</div>';
         html += '<footer>© 2026 M·MALL INVITED · ' + info.title.toUpperCase() + '</footer>';
         
