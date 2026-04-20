@@ -1601,6 +1601,26 @@ footer {
     padding: 0;
 }
 .brand-edit-btn:hover { color: var(--gold); }
+.backup-section {
+    text-align: center;
+    padding: 20px 20px 0;
+}
+.backup-btn {
+    background: transparent;
+    border: 1px solid rgba(184,149,106,0.4);
+    color: var(--bronze);
+    padding: 8px 22px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+.backup-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+}
 .edit-desc-btn {
     width: 100%;
     padding: 9px;
@@ -1751,6 +1771,9 @@ footer {
     <footer style="text-align: center; padding: 40px 20px 60px; color: var(--bronze); font-size: 0.85rem; border-top: 1px solid rgba(184, 149, 106, 0.15); margin-top: 30px;">
         <p style="margin: 0 0 8px 0; letter-spacing: 0.05em;">© 2026 M·MALL INVITED</p>
         <p style="margin: 0; opacity: 0.7; font-size: 0.8rem;">Curated Collection of Premium Brands</p>
+        <div class="backup-section" style="margin-top:20px;">
+            <button class="backup-btn" onclick="openBackupModal()">↑ Backup</button>
+        </div>
     </footer>
     
     </div>
@@ -1865,6 +1888,37 @@ footer {
         </div>
 
         <button class="generate-btn" onclick="saveApiKeyAndClose()">저장</button>
+    </div>
+</div>
+
+<!-- Backup Modal -->
+<div class="modal-overlay" id="backupModal" onclick="if(event.target===this)closeBackupModal()">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeBackupModal()">✕</button>
+        <h3 class="modal-title">백업</h3>
+        <p style="font-size:0.85rem;color:var(--bronze);margin-bottom:20px;line-height:1.6;">
+            My Archive의 커스텀 브랜드 <strong id="backupCount" style="color:var(--gold)">0</strong>개를 GitHub 서버에 저장합니다.<br>
+            <span style="font-size:0.75rem;opacity:0.7;">다음에 앱을 열 때 자동으로 복원됩니다.</span>
+        </p>
+        <div class="form-group">
+            <label class="form-label">관리자 비밀번호</label>
+            <input type="password" class="form-input" id="backupPassword" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')confirmBackupStep1()">
+        </div>
+        <div id="backupTokenGroup" style="display:none;">
+            <div class="form-group">
+                <label class="form-label">GitHub Personal Access Token</label>
+                <input type="password" class="form-input" id="backupToken" placeholder="ghp_..." onkeydown="if(event.key==='Enter')confirmBackupStep2()">
+                <p style="font-size:0.75rem;color:var(--bronze);margin-top:6px;opacity:0.8;">
+                    <a href="https://github.com/settings/tokens/new?scopes=repo&description=MMALL+Backup" target="_blank" rel="noopener" style="color:var(--gold)">GitHub에서 토큰 발급 →</a>
+                    (repo 권한 필요, 한 번만 입력하면 저장됨)
+                </p>
+            </div>
+            <button class="save-btn" style="display:block;" id="backupExecBtn" onclick="confirmBackupStep2()">백업 실행</button>
+        </div>
+        <div id="backupStep1Btns">
+            <button class="save-btn" style="display:block;" onclick="confirmBackupStep1()">확인</button>
+        </div>
+        <div id="backupStatus" style="margin-top:14px;font-size:0.85rem;text-align:center;min-height:20px;"></div>
     </div>
 </div>
 
@@ -3117,17 +3171,127 @@ function goToBrand(category, brandName) {
     }, 500);
 }
 
+// ── Backup / Restore ──────────────────────────────────────────────────────────
+function openBackupModal() {
+    document.getElementById('backupCount').textContent = customBrands.length;
+    document.getElementById('backupPassword').value = '';
+    document.getElementById('backupToken').value = localStorage.getItem('mmall_github_pat') || '';
+    document.getElementById('backupTokenGroup').style.display = 'none';
+    document.getElementById('backupStep1Btns').style.display = 'block';
+    document.getElementById('backupStatus').textContent = '';
+    document.getElementById('backupStatus').style.color = 'var(--gold)';
+    document.getElementById('backupModal').classList.add('active');
+    setTimeout(function() { document.getElementById('backupPassword').focus(); }, 120);
+}
+
+function closeBackupModal() {
+    document.getElementById('backupModal').classList.remove('active');
+}
+
+function confirmBackupStep1() {
+    var pwd = document.getElementById('backupPassword').value;
+    var status = document.getElementById('backupStatus');
+    if (pwd !== '4372') {
+        status.style.color = '#c0392b';
+        status.textContent = '비밀번호가 틀렸습니다.';
+        document.getElementById('backupPassword').focus();
+        return;
+    }
+    document.getElementById('backupStep1Btns').style.display = 'none';
+    document.getElementById('backupTokenGroup').style.display = 'block';
+    status.textContent = '';
+    setTimeout(function() { document.getElementById('backupToken').focus(); }, 100);
+}
+
+async function confirmBackupStep2() {
+    var token = document.getElementById('backupToken').value.trim();
+    var status = document.getElementById('backupStatus');
+    var btn = document.getElementById('backupExecBtn');
+    if (!token) {
+        status.style.color = '#c0392b';
+        status.textContent = 'GitHub 토큰을 입력해주세요.';
+        return;
+    }
+    localStorage.setItem('mmall_github_pat', token);
+    btn.disabled = true;
+    btn.textContent = '저장 중...';
+    status.style.color = 'var(--gold)';
+    status.textContent = '서버에 저장 중...';
+    try {
+        await backupToGitHub(token);
+        status.textContent = '✓ 서버 저장 완료! (' + customBrands.length + '개 브랜드)';
+        btn.textContent = '완료';
+        setTimeout(closeBackupModal, 1800);
+    } catch(e) {
+        status.style.color = '#c0392b';
+        status.textContent = '오류: ' + e.message;
+        btn.disabled = false;
+        btn.textContent = '다시 시도';
+    }
+}
+
+async function backupToGitHub(pat) {
+    var owner = 'songminki-cloud';
+    var repo = 'invited_brand_new2';
+    var path = 'custom_brands.json';
+    var content = JSON.stringify(customBrands, null, 2);
+    // UTF-8 safe base64
+    var bytes = new TextEncoder().encode(content);
+    var binStr = Array.from(bytes, function(b) { return String.fromCharCode(b); }).join('');
+    var b64 = btoa(binStr);
+
+    var headers = {
+        'Authorization': 'token ' + pat,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+    };
+    // Get current SHA if file exists
+    var sha = null;
+    var getRes = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path, { headers: headers });
+    if (getRes.ok) {
+        var getData = await getRes.json();
+        sha = getData.sha;
+    }
+    var body = { message: 'Backup custom brands (' + customBrands.length + '개)', content: b64 };
+    if (sha) body.sha = sha;
+
+    var putRes = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path, {
+        method: 'PUT',
+        headers: headers,
+        body: JSON.stringify(body)
+    });
+    if (!putRes.ok) {
+        var err = await putRes.json().catch(function() { return {}; });
+        throw new Error(err.message || 'GitHub API 오류 ' + putRes.status);
+    }
+}
+
 // Initialize search on page load
 window.addEventListener('DOMContentLoaded', function() {
     fetch('brands.json')
         .then(function(res) { return res.json(); })
         .then(function(json) {
             DATA = json;
-            // INFO 카운트를 실제 데이터 기준으로 갱신
             for (var cat in DATA) {
                 if (INFO[cat]) INFO[cat].count = DATA[cat].length;
             }
             buildBrandIndex();
+            // If no local custom brands, try restoring from server backup
+            if (customBrands.length === 0) {
+                return fetch('custom_brands.json?_=' + Date.now())
+                    .then(function(r) { return r.ok ? r.json() : []; })
+                    .catch(function() { return []; })
+                    .then(function(serverBrands) {
+                        if (Array.isArray(serverBrands) && serverBrands.length > 0) {
+                            customBrands = serverBrands;
+                            saveCustomBrands();
+                            showToast('서버에서 ' + serverBrands.length + '개 브랜드 복원됨');
+                        }
+                        loadCustomBrandsIntoData();
+                        updateFavoriteCount();
+                        updateAZFavorites();
+                    });
+            }
             loadCustomBrandsIntoData();
             updateFavoriteCount();
             updateAZFavorites();
