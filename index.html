@@ -1475,6 +1475,39 @@ footer {
     font-weight: 500;
     letter-spacing: 0.04em;
 }
+.provider-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 4px;
+}
+.provider-option {
+    border: 1px solid rgba(184, 149, 106, 0.25);
+    border-radius: 2px;
+    padding: 11px 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--warm-white);
+}
+.provider-option:hover { border-color: var(--gold); }
+.provider-option.active {
+    border-color: var(--gold);
+    background: rgba(184, 149, 106, 0.1);
+}
+.provider-name {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.88rem;
+    color: var(--charcoal);
+    margin-bottom: 2px;
+}
+.provider-sub {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--bronze);
+    letter-spacing: 0.04em;
+}
 .archived-date {
     font-size: 0.74rem;
     color: var(--bronze);
@@ -2174,27 +2207,45 @@ footer {
 
         <hr class="modal-divider">
         <p class="api-key-hint">
-            <span style="cursor:pointer;text-decoration:underline;" onclick="openApiKeyModal()">Anthropic API 키 설정</span>
-            &nbsp;·&nbsp; 키는 브라우저 localStorage에만 저장됩니다
+            <span style="cursor:pointer;text-decoration:underline;" onclick="openApiKeyModal()">AI Provider 설정</span>
+            &nbsp;·&nbsp; Claude · Gemini · GPT-4o 지원
         </p>
     </div>
 </div>
 
 <!-- API Key Modal -->
 <div class="modal-overlay" id="apiKeyModal" onclick="if(event.target===this)closeApiKeyModal()">
-    <div class="modal-box" style="max-width:440px;">
+    <div class="modal-box" style="max-width:480px;">
         <button class="modal-close" onclick="closeApiKeyModal()">✕</button>
-        <h2 class="modal-title">API Key 설정</h2>
-        <p class="modal-subtitle">Anthropic Claude API 키를 입력해주세요</p>
+        <h2 class="modal-title">AI Provider 설정</h2>
+        <p class="modal-subtitle">사용할 AI 서비스와 API 키를 선택해주세요</p>
 
         <div class="form-group">
-            <label class="form-label">Anthropic API Key</label>
+            <label class="form-label">AI Provider</label>
+            <div class="provider-grid" id="providerGrid">
+                <div class="provider-option active" data-provider="anthropic" onclick="selectProvider('anthropic')">
+                    <span class="provider-name">Claude</span>
+                    <span class="provider-sub">Anthropic</span>
+                </div>
+                <div class="provider-option" data-provider="google" onclick="selectProvider('google')">
+                    <span class="provider-name">Gemini</span>
+                    <span class="provider-sub">Google</span>
+                </div>
+                <div class="provider-option" data-provider="openai" onclick="selectProvider('openai')">
+                    <span class="provider-name">GPT-4o</span>
+                    <span class="provider-sub">OpenAI</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" id="apiKeyLabel">API Key</label>
             <input type="password" class="form-input" id="apiKeyInput"
                    placeholder="sk-ant-..."
                    onkeydown="if(event.key==='Enter')saveApiKeyAndClose()">
-            <p class="api-key-hint">
+            <p class="api-key-hint" id="apiKeyHint">
                 키는 이 브라우저에만 저장되며 외부 서버로 전송되지 않습니다.<br>
-                키가 없으면 <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>에서 발급받으세요.
+                <a id="apiKeyLink" href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>에서 발급받으세요.
             </p>
         </div>
 
@@ -2218,6 +2269,108 @@ const INFO = {
 // Custom archive brands
 let customBrands = JSON.parse(localStorage.getItem('mmall_custom_brands') || '[]');
 let pendingBrandData = null;
+
+// ── AI Provider Configurations ──────────────────────────────────────────────
+const API_PROVIDERS = {
+    anthropic: {
+        label: 'Anthropic API Key',
+        placeholder: 'sk-ant-...',
+        hintText: '키는 이 브라우저에만 저장됩니다.',
+        hintLinkText: 'console.anthropic.com',
+        hintLinkUrl: 'https://console.anthropic.com/',
+        storageKey: 'mmall_api_key_anthropic',
+        call: async function(apiKey, prompt) {
+            const res = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01',
+                    'anthropic-dangerous-allow-browser': 'true'
+                },
+                body: JSON.stringify({
+                    model: 'claude-haiku-4-5-20251001',
+                    max_tokens: 1024,
+                    messages: [{ role: 'user', content: prompt }]
+                })
+            });
+            if (!res.ok) {
+                const e = await res.json().catch(() => ({}));
+                throw new Error((e.error && e.error.message) ? e.error.message : 'HTTP ' + res.status);
+            }
+            const data = await res.json();
+            return data.content[0].text;
+        }
+    },
+    google: {
+        label: 'Google AI Studio API Key',
+        placeholder: 'AIzaSy...',
+        hintText: '키는 이 브라우저에만 저장됩니다.',
+        hintLinkText: 'aistudio.google.com',
+        hintLinkUrl: 'https://aistudio.google.com/app/apikey',
+        storageKey: 'mmall_api_key_google',
+        call: async function(apiKey, prompt) {
+            const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' + apiKey;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { maxOutputTokens: 1024 }
+                })
+            });
+            if (!res.ok) {
+                const e = await res.json().catch(() => ({}));
+                throw new Error((e.error && e.error.message) ? e.error.message : 'HTTP ' + res.status);
+            }
+            const data = await res.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+    },
+    openai: {
+        label: 'OpenAI API Key',
+        placeholder: 'sk-...',
+        hintText: '키는 이 브라우저에만 저장됩니다.',
+        hintLinkText: 'platform.openai.com',
+        hintLinkUrl: 'https://platform.openai.com/api-keys',
+        storageKey: 'mmall_api_key_openai',
+        call: async function(apiKey, prompt) {
+            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + apiKey
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    max_tokens: 1024,
+                    messages: [{ role: 'user', content: prompt }]
+                })
+            });
+            if (!res.ok) {
+                const e = await res.json().catch(() => ({}));
+                throw new Error((e.error && e.error.message) ? e.error.message : 'HTTP ' + res.status);
+            }
+            const data = await res.json();
+            return data.choices[0].message.content;
+        }
+    }
+};
+
+let selectedProvider = localStorage.getItem('mmall_api_provider') || 'anthropic';
+
+function selectProvider(providerKey) {
+    selectedProvider = providerKey;
+    document.querySelectorAll('.provider-option').forEach(function(el) {
+        el.classList.toggle('active', el.dataset.provider === providerKey);
+    });
+    const p = API_PROVIDERS[providerKey];
+    document.getElementById('apiKeyLabel').textContent = p.label;
+    document.getElementById('apiKeyInput').placeholder = p.placeholder;
+    document.getElementById('apiKeyInput').value = localStorage.getItem(p.storageKey) || '';
+    document.getElementById('apiKeyHint').innerHTML =
+        p.hintText + '<br><a href="' + p.hintLinkUrl + '" target="_blank" rel="noopener">' + p.hintLinkText + '</a>에서 발급받으세요.';
+}
 
 function saveCustomBrands() {
     localStorage.setItem('mmall_custom_brands', JSON.stringify(customBrands));
@@ -2255,10 +2408,17 @@ function closeCreateModal() {
 }
 
 function openApiKeyModal() {
-    const existing = localStorage.getItem('mmall_claude_api_key') || '';
-    document.getElementById('apiKeyInput').value = existing;
+    const p = API_PROVIDERS[selectedProvider];
+    document.getElementById('apiKeyLabel').textContent = p.label;
+    document.getElementById('apiKeyInput').placeholder = p.placeholder;
+    document.getElementById('apiKeyInput').value = localStorage.getItem(p.storageKey) || '';
+    document.getElementById('apiKeyHint').innerHTML =
+        p.hintText + '<br><a href="' + p.hintLinkUrl + '" target="_blank" rel="noopener">' + p.hintLinkText + '</a>에서 발급받으세요.';
+    document.querySelectorAll('.provider-option').forEach(function(el) {
+        el.classList.toggle('active', el.dataset.provider === selectedProvider);
+    });
     document.getElementById('apiKeyModal').classList.add('active');
-    setTimeout(() => document.getElementById('apiKeyInput').focus(), 120);
+    setTimeout(function() { document.getElementById('apiKeyInput').focus(); }, 120);
 }
 
 function closeApiKeyModal() {
@@ -2268,7 +2428,8 @@ function closeApiKeyModal() {
 function saveApiKeyAndClose() {
     const key = document.getElementById('apiKeyInput').value.trim();
     if (!key) { alert('API 키를 입력해주세요.'); return; }
-    localStorage.setItem('mmall_claude_api_key', key);
+    localStorage.setItem('mmall_api_provider', selectedProvider);
+    localStorage.setItem(API_PROVIDERS[selectedProvider].storageKey, key);
     closeApiKeyModal();
     const brandName = document.getElementById('brandNameInput').value.trim();
     if (document.getElementById('createBrandModal').classList.contains('active') && brandName) {
@@ -2280,7 +2441,8 @@ async function generateBrandCard() {
     const brandName = document.getElementById('brandNameInput').value.trim();
     if (!brandName) { alert('브랜드명을 입력해주세요.'); return; }
 
-    const apiKey = localStorage.getItem('mmall_claude_api_key') || '';
+    const provider = API_PROVIDERS[selectedProvider];
+    const apiKey = localStorage.getItem(provider.storageKey) || '';
     if (!apiKey) { openApiKeyModal(); return; }
 
     const country = document.getElementById('brandCountryInput').value.trim();
@@ -2293,52 +2455,28 @@ async function generateBrandCard() {
     preview.style.display = 'block';
     preview.innerHTML = '<div class="generating-indicator">✦ AI가 브랜드 카드를 생성하고 있습니다...</div>';
 
-    const prompt = `당신은 패션/라이프스타일 브랜드 큐레이터입니다. 다음 브랜드의 아카이브 카드를 작성해주세요.
-
-브랜드명: ${brandName}
-${country ? '국가: ' + country : '국가는 브랜드 정보를 바탕으로 추정해주세요.'}
-
-아래 JSON 형식으로만 응답해주세요 (마크다운 없이, 순수 JSON 객체만):
-{
-  "name": "한국어명 (영문명) 형식. 예: 메종 마르지엘라 (Maison Margiela). 한국 브랜드면 한국어명만. 영미권이면 영문명만",
-  "country": "발원 국가 (영어, 예: France / Japan / Korea / USA)",
-  "headline": "영문 태그라인 (3-5단어, 브랜드 본질을 함축하는 시적 표현)",
-  "definition": "한국어 한 줄 정의 (15-25자, 브랜드 핵심 정체성)",
-  "description": "한국어 설명 (150-250자, 브랜드 역사·철학·특징·주목받는 이유를 서술형으로)",
-  "category": "philosophy 또는 visual 또는 scarcity 또는 narrative 또는 inspiration 또는 select_shop"
-}
-
-카테고리 정의:
-- philosophy: 철학·신념·지속가능성·장인정신이 핵심
-- visual: 압도적 비주얼·그래픽·디자인이 핵심
-- scarcity: 희소성·한정판·드롭 컬처가 핵심
-- narrative: 스토리텔링·창립자 서사·팬덤이 핵심
-- inspiration: 공간·경험·라이프스타일 제안이 핵심
-- select_shop: 큐레이션 편집숍`;
+    const prompt = '당신은 패션/라이프스타일 브랜드 큐레이터입니다. 다음 브랜드의 아카이브 카드를 작성해주세요.\n\n' +
+        '브랜드명: ' + brandName + '\n' +
+        (country ? '국가: ' + country : '국가는 브랜드 정보를 바탕으로 추정해주세요.') + '\n\n' +
+        '아래 JSON 형식으로만 응답해주세요 (마크다운 없이, 순수 JSON 객체만):\n' +
+        '{\n' +
+        '  "name": "한국어명 (영문명) 형식. 예: 메종 마르지엘라 (Maison Margiela). 한국 브랜드면 한국어명만. 영미권이면 영문명만",\n' +
+        '  "country": "발원 국가 (영어, 예: France / Japan / Korea / USA)",\n' +
+        '  "headline": "영문 태그라인 (3-5단어, 브랜드 본질을 함축하는 시적 표현)",\n' +
+        '  "definition": "한국어 한 줄 정의 (15-25자, 브랜드 핵심 정체성)",\n' +
+        '  "description": "한국어 설명 (150-250자, 브랜드 역사·철학·특징·주목받는 이유를 서술형으로)",\n' +
+        '  "category": "philosophy 또는 visual 또는 scarcity 또는 narrative 또는 inspiration 또는 select_shop"\n' +
+        '}\n\n' +
+        '카테고리 정의:\n' +
+        '- philosophy: 철학·신념·지속가능성·장인정신이 핵심\n' +
+        '- visual: 압도적 비주얼·그래픽·디자인이 핵심\n' +
+        '- scarcity: 희소성·한정판·드롭 컬처가 핵심\n' +
+        '- narrative: 스토리텔링·창립자 서사·팬덤이 핵심\n' +
+        '- inspiration: 공간·경험·라이프스타일 제안이 핵심\n' +
+        '- select_shop: 큐레이션 편집숍';
 
     try {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01',
-                'anthropic-dangerous-allow-browser': 'true'
-            },
-            body: JSON.stringify({
-                model: 'claude-haiku-4-5-20251001',
-                max_tokens: 1024,
-                messages: [{ role: 'user', content: prompt }]
-            })
-        });
-
-        if (!response.ok) {
-            const err = await response.json().catch(() => ({}));
-            throw new Error(err.error && err.error.message ? err.error.message : 'HTTP ' + response.status);
-        }
-
-        const data = await response.json();
-        const content = data.content[0].text;
+        const content = await provider.call(apiKey, prompt);
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error('응답에서 JSON을 찾을 수 없습니다. 다시 시도해주세요.');
 
