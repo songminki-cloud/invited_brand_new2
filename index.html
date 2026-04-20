@@ -2319,7 +2319,10 @@ const API_PROVIDERS = {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { maxOutputTokens: 1024 }
+                    generationConfig: {
+                        maxOutputTokens: 1024,
+                        thinkingConfig: { thinkingBudget: 0 }
+                    }
                 })
             });
             if (!res.ok) {
@@ -2327,7 +2330,9 @@ const API_PROVIDERS = {
                 throw new Error((e.error && e.error.message) ? e.error.message : 'HTTP ' + res.status);
             }
             const data = await res.json();
-            return data.candidates[0].content.parts[0].text;
+            const parts = data.candidates[0].content.parts;
+            const responseParts = parts.filter(function(p) { return !p.thought; });
+            return (responseParts.length > 0 ? responseParts : parts).map(function(p) { return p.text || ''; }).join('\n');
         }
     },
     openai: {
