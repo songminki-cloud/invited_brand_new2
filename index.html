@@ -3209,6 +3209,11 @@ async function confirmBackupStep2() {
         status.textContent = 'GitHub 토큰을 입력해주세요.';
         return;
     }
+    if (customBrands.length === 0) {
+        status.style.color = '#c0392b';
+        status.textContent = '저장할 브랜드가 없습니다. My Archive에 브랜드를 먼저 추가하세요.';
+        return;
+    }
     localStorage.setItem('mmall_github_pat', token);
     btn.disabled = true;
     btn.textContent = '저장 중...';
@@ -3216,9 +3221,16 @@ async function confirmBackupStep2() {
     status.textContent = '서버에 저장 중...';
     try {
         await backupToGitHub(token);
+        status.style.color = '#27ae60';
         status.textContent = '✓ 서버 저장 완료! (' + customBrands.length + '개 브랜드)';
         btn.textContent = '완료';
-        setTimeout(closeBackupModal, 1800);
+        // Keep modal open for 3 seconds so user can see success message
+        setTimeout(function() {
+            closeBackupModal();
+            btn.disabled = false;
+            btn.textContent = '백업 실행';
+            showToast('백업 완료 ✓  ' + customBrands.length + '개 브랜드 저장됨');
+        }, 3000);
     } catch(e) {
         status.style.color = '#c0392b';
         status.textContent = '오류: ' + e.message;
@@ -3238,7 +3250,7 @@ async function backupToGitHub(pat) {
     var b64 = btoa(binStr);
 
     var headers = {
-        'Authorization': 'token ' + pat,
+        'Authorization': 'Bearer ' + pat,
         'Accept': 'application/vnd.github.v3+json',
         'Content-Type': 'application/json'
     };
