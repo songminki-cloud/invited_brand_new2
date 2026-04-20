@@ -2445,6 +2445,29 @@ function saveApiKeyAndClose() {
     }
 }
 
+function extractBrandJSON(text) {
+    if (!text) return null;
+    // 1) 마크다운 코드 펜스 제거 (```json ... ``` 또는 ``` ... ```)
+    var cleaned = text.replace(/```(?:json)?[\s\S]*?```/g, function(m) {
+        return m.replace(/```(?:json)?/g, '').replace(/```/g, '');
+    }).trim();
+    // 2) 직접 파싱 시도
+    try { return JSON.parse(cleaned); } catch(e) {}
+    // 3) 첫 번째 { 부터 마지막 } 까지 추출
+    var start = cleaned.indexOf('{');
+    var end = cleaned.lastIndexOf('}');
+    if (start !== -1 && end !== -1 && end > start) {
+        try { return JSON.parse(cleaned.slice(start, end + 1)); } catch(e) {}
+    }
+    // 4) 원본 text에서 재시도
+    var s2 = text.indexOf('{');
+    var e2 = text.lastIndexOf('}');
+    if (s2 !== -1 && e2 !== -1 && e2 > s2) {
+        try { return JSON.parse(text.slice(s2, e2 + 1)); } catch(e) {}
+    }
+    return null;
+}
+
 async function generateBrandCard() {
     const brandName = document.getElementById('brandNameInput').value.trim();
     if (!brandName) { alert('브랜드명을 입력해주세요.'); return; }
@@ -2485,11 +2508,8 @@ async function generateBrandCard() {
 
     try {
         const content = await provider.call(apiKey, prompt);
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('응답에서 JSON을 찾을 수 없습니다. 다시 시도해주세요.');
-
-        const brandData = JSON.parse(jsonMatch[0]);
-        if (!brandData.name || !brandData.description) throw new Error('생성된 데이터가 불완전합니다. 다시 시도해주세요.');
+        const brandData = extractBrandJSON(content);
+        if (!brandData || !brandData.name || !brandData.description) throw new Error('생성된 데이터가 불완전합니다. 다시 시도해주세요.');
 
         showGeneratedPreview(brandData);
 
