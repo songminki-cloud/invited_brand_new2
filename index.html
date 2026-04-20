@@ -1894,8 +1894,8 @@ footer {
         <button class="modal-close" onclick="closeBackupModal()">✕</button>
         <h3 class="modal-title">백업</h3>
         <p style="font-size:0.85rem;color:var(--bronze);margin-bottom:20px;line-height:1.6;">
-            My Archive의 커스텀 브랜드 <strong id="backupCount" style="color:var(--gold)">0</strong>개를 GitHub 서버에 저장합니다.<br>
-            <span style="font-size:0.75rem;opacity:0.7;">다음에 앱을 열 때 자동으로 복원됩니다.</span>
+            전체 브랜드 편집 내용 <strong id="backupCount" style="color:var(--gold)">0</strong>건을 GitHub 서버에 저장합니다.<br>
+            <span style="font-size:0.75rem;opacity:0.7;">이름·설명·홈페이지 수정 내역이 모두 포함됩니다. 다음에 앱을 열 때 자동 복원됩니다.</span>
         </p>
         <div class="form-group">
             <label class="form-label">관리자 비밀번호</label>
@@ -3170,7 +3170,8 @@ function goToBrand(category, brandName) {
 
 // ── Backup / Restore ──────────────────────────────────────────────────────────
 function openBackupModal() {
-    document.getElementById('backupCount').textContent = customBrands.length;
+    var overrideCount = Object.keys(brandOverrides).length;
+    document.getElementById('backupCount').textContent = overrideCount;
     document.getElementById('backupPassword').value = '';
     document.getElementById('backupToken').value = localStorage.getItem('mmall_github_pat') || '';
     document.getElementById('backupTokenGroup').style.display = 'none';
@@ -3209,9 +3210,10 @@ async function confirmBackupStep2() {
         status.textContent = 'GitHub 토큰을 입력해주세요.';
         return;
     }
-    if (customBrands.length === 0) {
+    var overrideCount = Object.keys(brandOverrides).length;
+    if (overrideCount === 0) {
         status.style.color = '#c0392b';
-        status.textContent = '저장할 브랜드가 없습니다. My Archive에 브랜드를 먼저 추가하세요.';
+        status.textContent = '저장할 편집 내용이 없습니다. 브랜드를 먼저 편집해주세요.';
         return;
     }
     localStorage.setItem('mmall_github_pat', token);
@@ -3222,14 +3224,13 @@ async function confirmBackupStep2() {
     try {
         await backupToGitHub(token);
         status.style.color = '#27ae60';
-        status.textContent = '✓ 서버 저장 완료! (' + customBrands.length + '개 브랜드)';
+        status.textContent = '✓ 서버 저장 완료! (' + overrideCount + '건 편집 내용)';
         btn.textContent = '완료';
-        // Keep modal open for 3 seconds so user can see success message
         setTimeout(function() {
             closeBackupModal();
             btn.disabled = false;
             btn.textContent = '백업 실행';
-            showToast('백업 완료 ✓  ' + customBrands.length + '개 브랜드 저장됨');
+            showToast('백업 완료 ✓  편집 내용 ' + overrideCount + '건 저장됨');
         }, 3000);
     } catch(e) {
         status.style.color = '#c0392b';
@@ -3242,8 +3243,13 @@ async function confirmBackupStep2() {
 async function backupToGitHub(pat) {
     var owner = 'songminki-cloud';
     var repo = 'invited_brand_new2';
-    var path = 'custom_brands.json';
-    var content = JSON.stringify(customBrands, null, 2);
+    var path = 'brands_backup.json';
+    var payload = {
+        savedAt: new Date().toISOString(),
+        overrides: brandOverrides,
+        customBrands: customBrands
+    };
+    var content = JSON.stringify(payload, null, 2);
     // UTF-8 safe base64
     var bytes = new TextEncoder().encode(content);
     var binStr = Array.from(bytes, function(b) { return String.fromCharCode(b); }).join('');
@@ -3285,16 +3291,24 @@ window.addEventListener('DOMContentLoaded', function() {
                 if (INFO[cat]) INFO[cat].count = DATA[cat].length;
             }
             buildBrandIndex();
-            // If no local custom brands, try restoring from server backup
-            if (customBrands.length === 0) {
-                return fetch('custom_brands.json?_=' + Date.now())
-                    .then(function(r) { return r.ok ? r.json() : []; })
-                    .catch(function() { return []; })
-                    .then(function(serverBrands) {
-                        if (Array.isArray(serverBrands) && serverBrands.length > 0) {
-                            customBrands = serverBrands;
+            // If local overrides are empty, try restoring from server backup
+            var hasLocalData = Object.keys(brandOverrides).length > 0 || customBrands.length > 0;
+            if (!hasLocalData) {
+                return fetch('brands_backup.json?_=' + Date.now())
+                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .catch(function() { return null; })
+                    .then(function(backup) {
+                        if (backup && (Object.keys(backup.overrides || {}).length > 0 || (backup.customBrands || []).length > 0)) {
+                            brandOverrides = backup.overrides || {};
+                            saveBrandOverrides();
+                            customBrands = backup.customBrands || [];
                             saveCustomBrands();
-                            showToast('서버에서 ' + serverBrands.length + '개 브랜드 복원됨');
+                            var total = Object.keys(brandOverrides).length;
+                            showToast('서버 백업에서 복원됨 (' + total + '건 편집 내용)');
+                            // Clear page caches so edits are reflected
+                            ['philosophy','visual','scarcity','narrative','inspiration','select_shop'].forEach(function(p) {
+                                var pg = document.getElementById(p); if (pg) pg.innerHTML = '';
+                            });
                         }
                         loadCustomBrandsIntoData();
                         updateFavoriteCount();
