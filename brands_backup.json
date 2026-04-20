@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-04-20T07:59:50.902Z",
+  "savedAt": "2026-04-20T08:08:36.741Z",
   "overrides": {
     "르917 (LeSeptember)": {
       "name": "르917 (LeSeptember)",
@@ -14,7 +14,29 @@
       "definition": "한국의 '더 로우', 조용한 럭셔리",
       "description": "르917(leSeptember)은 미니멀리즘 기반의 절제된 아름다움을 추구하는 패션/라이프스타일 브랜드입니다. 9월의 차분함과 새로운 시작의 의미를 담아, 시대를 초월하는 클래식함과 본질에 충실한 디자인을 선보입니다. 고품질 소재와 섬세한 디테일로 완성된 젠더리스 아이템들은 편안함과 세련됨을 동시에 선사하며, 자신만의 스타일을 중시하는 이들에게 공감을 얻고 있습니다. 과장되지 않은 절제미로 진정한 가치를 표현하며, 지속 가능성을 지향해 많은 이들에게 사랑받고 있습니다.",
       "homepage": "https://www.instagram.com/le17septembre?igsh=dGZ6Zmx1OXcwcnh6"
+    },
+    "포탈(Portal)": {
+      "name": "포탈(Portal)",
+      "headline": "Gateway to Evolving Realities",
+      "definition": "새로운 차원을 여는 타임리스 스타일",
+      "description": "4명의 디렉터의 풍부한 경험에서 탄생한 영국 러닝 브랜드, PORTAL(포탈)은 ‘하이브리드 퍼포먼스’를 키워드로 일상과 액티비티의 경계를 허무는 데 집중합니다. 미니멀하고 감각적인 러닝웨어 브랜드, 포탈을 지금 경험해보세요.",
+      "homepage": "https://www.instagram.com/_____portal?igsh=MXkyaDlxdTFwcTZ6bQ=="
     }
   },
-  "customBrands": []
+  "customBrands": [
+    {
+      "name": "포탈(Portal)",
+      "country": "UK",
+      "headline": "Gateway to Evolving Realities",
+      "definition": "새로운 차원을 여는 타임리스 스타일",
+      "description": "4명의 디렉터의 풍부한 경험에서 탄생한 영국 러닝 브랜드, PORTAL(포탈)은 ‘하이브리드 퍼포먼스’를 키워드로 일상과 액티비티의 경계를 허무는 데 집중합니다. 미니멀하고 감각적인 러닝웨어 브랜드, 포탈을 지금 경험해보세요.",
+      "category": "inspiration",
+      "no": "★1",
+      "id": "custom_1776672369859",
+      "createdAt": "2026-04-20",
+      "isCustom": true,
+      "archivedCategory": "narrative",
+      "homepage": "https://www.instagram.com/_____portal?igsh=MXkyaDlxdTFwcTZ6bQ=="
+    }
+  ]
 }
