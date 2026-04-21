@@ -1621,6 +1621,26 @@ footer {
     border-color: var(--gold);
     color: var(--gold);
 }
+.delete-brand-modal-btn {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid rgba(192, 57, 43, 0.35);
+    color: rgba(192, 57, 43, 0.7);
+    border-radius: 4px;
+    font-size: 0.82rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+.delete-brand-modal-btn:hover {
+    background: rgba(192, 57, 43, 0.08);
+    border-color: rgba(192, 57, 43, 0.7);
+    color: #c0392b;
+}
 .edit-desc-btn {
     width: 100%;
     padding: 9px;
@@ -1837,7 +1857,32 @@ footer {
             AI 카드 생성
         </button>
 
-        <div id="generatedPreview" style="display:none;"></div>
+        <!-- Editable fields shown after AI generation (or for manual entry) -->
+        <div id="generatedEditFields" style="display:none; margin-top:18px;">
+            <div class="form-group">
+                <label class="form-label">Headline <span style="opacity:0.6;">(영문 태그라인)</span></label>
+                <input type="text" class="form-input" id="pendingHeadline">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Definition <span style="opacity:0.6;">(한 줄 정의)</span></label>
+                <input type="text" class="form-input" id="pendingDefinition">
+            </div>
+            <div class="form-group">
+                <label class="form-label">소개글</label>
+                <textarea class="form-textarea" id="pendingDescription"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">카테고리</label>
+                <select class="form-input" id="pendingCategory">
+                    <option value="philosophy">Philosophy</option>
+                    <option value="visual">Visual</option>
+                    <option value="scarcity">Scarcity</option>
+                    <option value="narrative">Narrative</option>
+                    <option value="inspiration">Inspiration</option>
+                    <option value="select_shop">Select Shop</option>
+                </select>
+            </div>
+        </div>
 
         <button class="save-btn" id="saveBtn" onclick="saveGeneratedBrand()" style="display:none;">
             아카이브에 저장
@@ -1953,6 +1998,7 @@ footer {
         </div>
 
         <button class="save-btn" style="display:block;" onclick="saveEditedBrand()">저장</button>
+        <button class="delete-brand-modal-btn" onclick="deleteFromEditModal()">이 브랜드 삭제</button>
     </div>
 </div>
 
@@ -1972,6 +2018,10 @@ const INFO = {
 // Custom archive brands
 let customBrands = JSON.parse(localStorage.getItem('mmall_custom_brands') || '[]');
 let pendingBrandData = null;
+
+// Hidden brands (deleted from Edit modal, stored in localStorage)
+let hiddenBrands = new Set(JSON.parse(localStorage.getItem('mmall_hidden_brands') || '[]'));
+function saveHiddenBrands() { localStorage.setItem('mmall_hidden_brands', JSON.stringify([...hiddenBrands])); }
 
 // Brand overrides (edits applied to any brand, stored in localStorage)
 let brandOverrides = JSON.parse(localStorage.getItem('mmall_brand_overrides') || '{}');
@@ -2151,6 +2201,52 @@ function saveEditedBrand() {
     });
     closeEditModal();
     showToast('저장되었습니다 ✓');
+    var active = document.querySelector('.page.active');
+    if (active && active.id !== 'index') showPage(active.id);
+}
+
+function deleteFromEditModal() {
+    if (!currentEditingBrandName) return;
+    var brandName = currentEditingBrandName;
+    if (!confirm('"' + brandName + '"을(를) 삭제할까요?')) return;
+
+    // Custom brand: remove from customBrands
+    var ci = customBrands.findIndex(function(b) { return b.name === brandName; });
+    if (ci !== -1) {
+        customBrands.splice(ci, 1);
+        saveCustomBrands();
+        if (DATA.my_archive) DATA.my_archive = DATA.my_archive.filter(function(b) { return b.name !== brandName; });
+    } else {
+        // Regular brand: add to hidden list
+        hiddenBrands.add(brandName);
+        saveHiddenBrands();
+    }
+
+    // Remove from brandOverrides
+    delete brandOverrides[brandName];
+    saveBrandOverrides();
+
+    // Remove from favorites
+    var fi = favorites.indexOf(brandName);
+    if (fi !== -1) { favorites.splice(fi, 1); saveFavorites(); }
+
+    // Remove from allBrands and DATA runtime
+    allBrands = allBrands.filter(function(b) { return b.name !== brandName; });
+    for (var cat in DATA) {
+        if (DATA[cat]) DATA[cat] = DATA[cat].filter(function(b) { return b.name !== brandName; });
+    }
+
+    updateArchiveCount();
+    rebuildAZList();
+    addCustomBrandsToAZList();
+
+    ['favorites','philosophy','visual','scarcity','narrative','inspiration','select_shop','my_archive'].forEach(function(p) {
+        var pg = document.getElementById(p); if (pg) pg.innerHTML = '';
+    });
+
+    closeEditModal();
+    showToast('"' + brandName + '" 삭제됨');
+
     var active = document.querySelector('.page.active');
     if (active && active.id !== 'index') showPage(active.id);
 }
@@ -2365,7 +2461,10 @@ function closeCreateModal() {
     document.getElementById('createBrandModal').classList.remove('active');
     document.getElementById('brandNameInput').value = '';
     document.getElementById('brandCountryInput').value = '';
-    document.getElementById('generatedPreview').style.display = 'none';
+    document.getElementById('generatedEditFields').style.display = 'none';
+    document.getElementById('pendingHeadline').value = '';
+    document.getElementById('pendingDefinition').value = '';
+    document.getElementById('pendingDescription').value = '';
     document.getElementById('saveBtn').style.display = 'none';
     const btn = document.getElementById('generateBtn');
     btn.disabled = false;
@@ -2480,30 +2579,33 @@ async function generateBrandCard() {
 
 function showGeneratedPreview(brandData) {
     pendingBrandData = brandData;
-    const preview = document.getElementById('generatedPreview');
-    const escapeName = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    // Fill editable fields so user can tweak before saving
+    document.getElementById('pendingHeadline').value = brandData.headline || '';
+    document.getElementById('pendingDefinition').value = brandData.definition || '';
+    document.getElementById('pendingDescription').value = brandData.description || '';
+    var catSel = document.getElementById('pendingCategory');
+    if (catSel && brandData.category) catSel.value = brandData.category;
 
-    preview.innerHTML =
-        '<div class="preview-card">' +
-        '<div class="brand-meta"><span class="brand-country">' + escapeName(brandData.country) + '</span></div>' +
-        '<h2 class="brand-name">' + escapeName(brandData.name) + '</h2>' +
-        '<p class="brand-headline">' + escapeName(brandData.headline) + '</p>' +
-        '<p class="brand-definition">' + escapeName(brandData.definition) + '</p>' +
-        '<p class="brand-description">' + escapeName(brandData.description) + '</p>' +
-        '<p class="preview-category">카테고리: <strong>' + getCategoryDisplayName(brandData.category) + '</strong></p>' +
-        '</div>';
-    preview.style.display = 'block';
-
-    const btn = document.getElementById('generateBtn');
-    btn.textContent = '다시 생성';
-    btn.disabled = false;
+    document.getElementById('generatedEditFields').style.display = 'block';
+    document.getElementById('generateBtn').textContent = '다시 생성';
+    document.getElementById('generateBtn').disabled = false;
     document.getElementById('saveBtn').style.display = 'block';
 }
 
 function saveGeneratedBrand() {
-    if (!pendingBrandData) return;
-
-    const brand = Object.assign({}, pendingBrandData, {
+    var name = document.getElementById('brandNameInput').value.trim();
+    var country = document.getElementById('brandCountryInput').value.trim();
+    var headline = document.getElementById('pendingHeadline').value.trim();
+    var definition = document.getElementById('pendingDefinition').value.trim();
+    var description = document.getElementById('pendingDescription').value.trim();
+    var category = document.getElementById('pendingCategory').value;
+    if (!name) { alert('브랜드명을 입력해주세요.'); return; }
+    if (!description) { alert('소개글을 입력해주세요.'); return; }
+    var brandData = Object.assign({}, pendingBrandData || {}, {
+        name: name, country: country || (pendingBrandData && pendingBrandData.country) || '',
+        headline: headline, definition: definition, description: description, category: category
+    });
+    const brand = Object.assign({}, brandData, {
         no: '★' + (customBrands.length + 1),
         id: 'custom_' + Date.now(),
         createdAt: new Date().toISOString().split('T')[0],
@@ -2988,7 +3090,7 @@ function showPage(cat) {
         
         html += '<div class="brands-grid">';
 
-        brands.forEach((b, index) => {
+        brands.filter(b => !hiddenBrands.has(b.name)).forEach((b, index) => {
             html += makeBrandCardHTML(b, index, cat, false);
         });
 
@@ -3048,7 +3150,7 @@ function buildBrandIndex() {
     regularCats.forEach(function(category) {
         if (!DATA[category]) return;
         DATA[category].sort(function(a, b) { return a.name.localeCompare(b.name, 'ko-KR'); });
-        DATA[category].forEach(function(brand) {
+        DATA[category].filter(function(brand) { return !hiddenBrands.has(brand.name); }).forEach(function(brand) {
             allBrands.push({
                 name: brand.name,
                 category: category,
@@ -3198,10 +3300,37 @@ function confirmBackupStep1() {
         document.getElementById('backupPassword').focus();
         return;
     }
-    document.getElementById('backupStep1Btns').style.display = 'none';
-    document.getElementById('backupTokenGroup').style.display = 'block';
-    status.textContent = '';
-    setTimeout(function() { document.getElementById('backupToken').focus(); }, 100);
+    var savedToken = localStorage.getItem('mmall_github_pat');
+    if (savedToken) {
+        // Token already stored — backup immediately without showing token
+        document.getElementById('backupStep1Btns').style.display = 'none';
+        status.style.color = 'var(--gold)';
+        status.textContent = '서버에 저장 중...';
+        var overrideCount = Object.keys(brandOverrides).length;
+        if (overrideCount === 0) {
+            status.style.color = '#c0392b';
+            status.textContent = '저장할 편집 내용이 없습니다.';
+            document.getElementById('backupStep1Btns').style.display = 'block';
+            return;
+        }
+        backupToGitHub(savedToken).then(function() {
+            status.style.color = '#27ae60';
+            status.textContent = '✓ 서버 저장 완료! (' + overrideCount + '건 편집 내용)';
+            setTimeout(function() {
+                closeBackupModal();
+                showToast('백업 완료 ✓  편집 내용 ' + overrideCount + '건 저장됨');
+            }, 3000);
+        }).catch(function(e) {
+            status.style.color = '#c0392b';
+            status.textContent = '오류: ' + e.message;
+            document.getElementById('backupStep1Btns').style.display = 'block';
+        });
+    } else {
+        document.getElementById('backupStep1Btns').style.display = 'none';
+        document.getElementById('backupTokenGroup').style.display = 'block';
+        status.textContent = '';
+        setTimeout(function() { document.getElementById('backupToken').focus(); }, 100);
+    }
 }
 
 async function confirmBackupStep2() {
