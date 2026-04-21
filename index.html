@@ -2162,37 +2162,24 @@ function saveEditedBrand() {
         homepage: document.getElementById('editHomepage').value.trim()
     };
     Object.keys(ov).forEach(function(k) { if (!ov[k]) delete ov[k]; });
-    var newName = ov.name || oldName;
-    var nameChanged = newName !== oldName;
 
-    // Store override under new name; remove old key if name changed
-    brandOverrides[newName] = ov;
-    if (nameChanged) delete brandOverrides[oldName];
+    // Always store override under ORIGINAL name (oldName from brands.json)
+    // so applyOverrides() can find it on every page load
+    brandOverrides[oldName] = ov;
+    // Remove any stale key stored under new name (old incorrect approach)
+    var newName = ov.name || oldName;
+    if (newName !== oldName && brandOverrides[newName]) delete brandOverrides[newName];
     saveBrandOverrides();
 
-    // Keep favorites array in sync with renamed brand
-    if (nameChanged) {
-        var fi = favorites.indexOf(oldName);
-        if (fi !== -1) { favorites[fi] = newName; saveFavorites(); }
-    }
-
-    // Update customBrands if applicable
+    // Update customBrands directly (they are user-defined, not from brands.json)
     var ci = customBrands.findIndex(function(b) { return b.name === oldName; });
     if (ci !== -1) { Object.assign(customBrands[ci], ov); saveCustomBrands(); }
 
-    // Update DATA runtime (name + all fields)
-    for (var cat in DATA) {
-        if (DATA[cat]) {
-            var bi = DATA[cat].findIndex(function(b) { return b.name === oldName; });
-            if (bi !== -1) Object.assign(DATA[cat][bi], ov);
-        }
-    }
+    // DO NOT update DATA — overrides are applied at render time via applyOverrides()
 
-    // Rebuild search index and A-Z list to reflect any name changes
     buildBrandIndex();
     addCustomBrandsToAZList();
 
-    // Clear all page caches
     ['favorites','philosophy','visual','scarcity','narrative','inspiration','select_shop','my_archive'].forEach(function(p) {
         var pg = document.getElementById(p); if (pg) pg.innerHTML = '';
     });
@@ -3141,6 +3128,65 @@ const CATEGORY_NAMES = {
     'my_archive': 'My Archive'
 };
 
+// Migrate stale overrides stored under new name → re-key to original brand name.
+// Also promote orphan overrides (unknown brands) into customBrands.
+function migrateOverridesIfNeeded() {
+    var originalNames = new Set();
+    ['philosophy','visual','scarcity','narrative','inspiration','select_shop'].forEach(function(cat) {
+        if (!DATA[cat]) return;
+        DATA[cat].forEach(function(b) { originalNames.add(b.name); });
+    });
+    var toAdd = {}, toDelete = [], orphans = [];
+    Object.keys(brandOverrides).forEach(function(key) {
+        if (!originalNames.has(key)) {
+            // Try prefix match: "르917 (LeSeptember)" → prefix "르917" → find "르917 (르구일칠)"
+            var prefix = key.split(/[\s(]/)[0].trim();
+            var foundOrig = null;
+            originalNames.forEach(function(orig) {
+                if (!foundOrig && !brandOverrides[orig] && !toAdd[orig]) {
+                    if (orig.split(/[\s(]/)[0].trim() === prefix) foundOrig = orig;
+                }
+            });
+            if (foundOrig) {
+                toAdd[foundOrig] = brandOverrides[key];
+                toDelete.push(key);
+            } else {
+                orphans.push({ key: key, data: brandOverrides[key] });
+            }
+        }
+    });
+    toDelete.forEach(function(k) { delete brandOverrides[k]; });
+    Object.assign(brandOverrides, toAdd);
+
+    // Orphan overrides whose brand name isn't in brands.json → create as customBrand
+    orphans.forEach(function(item) {
+        var d = item.data;
+        if (!d.description) return; // skip empty
+        var brandName = d.name || item.key;
+        var alreadyExists = customBrands.some(function(b) { return b.name === brandName || b.name === item.key; });
+        if (!alreadyExists) {
+            customBrands.push({
+                name: brandName,
+                country: d.country || '',
+                headline: d.headline || '',
+                definition: d.definition || '',
+                description: d.description,
+                homepage: d.homepage || '',
+                no: '★' + (customBrands.length + 1),
+                id: 'custom_migrated_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
+                createdAt: new Date().toISOString().split('T')[0],
+                isCustom: true,
+                category: d.category || 'my_archive'
+            });
+        }
+        delete brandOverrides[item.key];
+    });
+    if (toDelete.length > 0 || orphans.length > 0) {
+        saveBrandOverrides();
+        saveCustomBrands();
+    }
+}
+
 function buildBrandIndex() {
     allBrands = [];
     var regularCats = ['philosophy','visual','scarcity','narrative','inspiration','select_shop'];
@@ -3148,13 +3194,16 @@ function buildBrandIndex() {
         if (!DATA[category]) return;
         DATA[category].sort(function(a, b) { return a.name.localeCompare(b.name, 'ko-KR'); });
         DATA[category].filter(function(brand) { return !hiddenBrands.has(brand.name); }).forEach(function(brand) {
+            // Apply overrides to get display name and updated fields
+            var disp = applyOverrides(brand);
             allBrands.push({
-                name: brand.name,
+                name: brand.name,                          // original key (for lookup)
+                displayName: disp.name || brand.name,      // overridden name (for display/search)
                 category: category,
                 categoryDisplay: CATEGORY_NAMES[category],
-                country: brand.country,
-                headline: brand.headline || '',
-                definition: brand.definition || ''
+                country: disp.country || brand.country,
+                headline: disp.headline || brand.headline || '',
+                definition: disp.definition || brand.definition || ''
             });
         });
     });
@@ -3167,102 +3216,87 @@ function rebuildAZList() {
     list.querySelectorAll('.az-static').forEach(function(el) { el.remove(); });
     var sorted = allBrands.filter(function(b) {
         return b.category !== 'my_archive';
-    }).slice().sort(function(a, b) { return a.name.localeCompare(b.name, 'ko-KR'); });
+    }).slice().sort(function(a, b) {
+        return (a.displayName || a.name).localeCompare((b.displayName || b.name), 'ko-KR');
+    });
     var fragment = document.createDocumentFragment();
     sorted.forEach(function(brand) {
         var div = document.createElement('div');
         div.className = 'brand-index-item az-static';
         if (favorites.includes(brand.name)) div.classList.add('favorited');
-        div.textContent = brand.name;
+        div.textContent = brand.displayName || brand.name;
         var safeName = brand.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
         div.setAttribute('onclick', "searchBrand('" + safeName + "')");
         fragment.appendChild(div);
     });
-    // Insert static items before any existing az-custom items
     var firstCustom = list.querySelector('.az-custom');
     if (firstCustom) { list.insertBefore(fragment, firstCustom); }
     else { list.appendChild(fragment); }
 }
 
 function searchBrands(query) {
-    console.log('searchBrands called with:', query);
-    
     if (!query || query.length < 1) {
-        const resultsDiv = document.getElementById('searchResults');
-        if (resultsDiv) resultsDiv.classList.remove('active');
+        var rd = document.getElementById('searchResults');
+        if (rd) rd.classList.remove('active');
         return;
     }
-    
-    const searchLower = query.toLowerCase();
-    const results = allBrands.filter(brand => 
-        brand.name.toLowerCase().includes(searchLower) ||
-        brand.headline.toLowerCase().includes(searchLower) ||
-        brand.definition.toLowerCase().includes(searchLower) ||
-        brand.country.toLowerCase().includes(searchLower)
-    ).slice(0, 10);
-    
-    console.log('Found results:', results.length);
-    
-    const resultsDiv = document.getElementById('searchResults');
-    if (!resultsDiv) {
-        console.error('searchResults div not found!');
-        return;
-    }
-    
+    var searchLower = query.toLowerCase();
+    var results = allBrands.filter(function(brand) {
+        var dName = (brand.displayName || brand.name).toLowerCase();
+        return dName.includes(searchLower) ||
+               brand.name.toLowerCase().includes(searchLower) ||
+               (brand.headline || '').toLowerCase().includes(searchLower) ||
+               (brand.definition || '').toLowerCase().includes(searchLower) ||
+               (brand.country || '').toLowerCase().includes(searchLower);
+    }).slice(0, 10);
+
+    var resultsDiv = document.getElementById('searchResults');
+    if (!resultsDiv) return;
+
     if (results.length === 0) {
         resultsDiv.innerHTML = '<div style="padding: 20px; text-align: center; color: #8B7355;">검색 결과가 없습니다</div>';
         resultsDiv.classList.add('active');
         return;
     }
-    
-    let html = '';
-    results.forEach(brand => {
-        html += `
-            <div class="search-result-item" onclick="goToBrand('${brand.category}', '${brand.name.replace(/'/g, "\\'")}')">
-                <div class="search-result-name">${brand.name}</div>
-                <div class="search-result-meta">${brand.categoryDisplay} · ${brand.country}</div>
-            </div>
-        `;
+    var html = '';
+    results.forEach(function(brand) {
+        var displayName = brand.displayName || brand.name;
+        var safeName = brand.name.replace(/'/g, "\\'");
+        html += '<div class="search-result-item" onclick="goToBrand(\'' + brand.category + '\',\'' + safeName + '\')">' +
+            '<div class="search-result-name">' + displayName + '</div>' +
+            '<div class="search-result-meta">' + brand.categoryDisplay + ' · ' + brand.country + '</div>' +
+            '</div>';
     });
-    
     resultsDiv.innerHTML = html;
     resultsDiv.classList.add('active');
-    console.log('Search results displayed');
 }
 
 function searchBrand(brandName) {
-    // A-Z 인덱스에서 클릭 시 해당 브랜드 찾아서 바로 이동
-    const brand = allBrands.find(b => b.name === brandName);
-    
-    if (brand) {
-        // 바로 해당 카테고리 페이지로 이동
-        goToBrand(brand.category, brand.name);
-    }
+    var brand = allBrands.find(function(b) { return b.name === brandName; });
+    if (brand) goToBrand(brand.category, brand.name);
 }
 
 function goToBrand(category, brandName) {
-    // 해당 카테고리 페이지로 이동
     showPage(category);
-    
-    // 검색 결과 닫기
-    const searchResults = document.getElementById('searchResults');
-    const searchInput = document.getElementById('brandSearch');
+    var searchResults = document.getElementById('searchResults');
+    var searchInput = document.getElementById('brandSearch');
     if (searchResults) searchResults.classList.remove('active');
     if (searchInput) searchInput.value = '';
-    
-    // 약간의 딜레이 후 해당 브랜드로 스크롤
-    setTimeout(() => {
-        const brandCards = document.querySelectorAll('.brand-name');
-        for (const card of brandCards) {
-            if (card.textContent.trim() === brandName.trim()) {
-                const brandCard = card.closest('.brand-card');
+
+    // Cards show the display name (overridden), so we need to scroll to that text
+    var brandEntry = allBrands.find(function(b) { return b.name === brandName; });
+    var targetDisplayName = (brandEntry && brandEntry.displayName) || brandName;
+
+    setTimeout(function() {
+        var brandCards = document.querySelectorAll('.brand-name');
+        for (var i = 0; i < brandCards.length; i++) {
+            var card = brandCards[i];
+            if (card.textContent.trim() === targetDisplayName.trim()) {
+                var brandCard = card.closest('.brand-card');
                 if (brandCard) {
                     brandCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    // 하이라이트 효과
                     brandCard.style.backgroundColor = 'rgba(184, 149, 106, 0.1)';
-                    setTimeout(() => {
-                        brandCard.style.backgroundColor = '';
-                    }, 2000);
+                    setTimeout(function() { brandCard.style.backgroundColor = ''; }, 2000);
                 }
                 break;
             }
@@ -3419,38 +3453,40 @@ window.addEventListener('DOMContentLoaded', function() {
             for (var cat in DATA) {
                 if (INFO[cat]) INFO[cat].count = DATA[cat].length;
             }
-            buildBrandIndex();
-            // If local overrides are empty, try restoring from server backup
-            var hasLocalData = Object.keys(brandOverrides).length > 0 || customBrands.length > 0;
-            if (!hasLocalData) {
-                return fetch('brands_backup.json?_=' + Date.now())
-                    .then(function(r) { return r.ok ? r.json() : null; })
-                    .catch(function() { return null; })
-                    .then(function(backup) {
-                        if (backup && (Object.keys(backup.overrides || {}).length > 0 || (backup.customBrands || []).length > 0)) {
-                            brandOverrides = backup.overrides || {};
-                            saveBrandOverrides();
-                            customBrands = backup.customBrands || [];
-                            saveCustomBrands();
-                            var total = Object.keys(brandOverrides).length;
-                            showToast('서버 백업에서 복원됨 (' + total + '건 편집 내용)');
-                            // Clear page caches so edits are reflected
-                            ['philosophy','visual','scarcity','narrative','inspiration','select_shop'].forEach(function(p) {
-                                var pg = document.getElementById(p); if (pg) pg.innerHTML = '';
-                            });
-                        }
-                        loadCustomBrandsIntoData();
-                        updateFavoriteCount();
-                        updateAZFavorites();
-                    });
-            }
-            loadCustomBrandsIntoData();
-            updateFavoriteCount();
-            updateAZFavorites();
+            // Always try to load from server backup first, then merge with localStorage
+            return fetch('brands_backup.json?_=' + Date.now())
+                .then(function(r) { return r.ok ? r.json() : null; })
+                .catch(function() { return null; })
+                .then(function(backup) {
+                    if (backup) {
+                        var serverOverrides = backup.overrides || {};
+                        var serverCustom = backup.customBrands || [];
+                        // Merge: server backup overrides local if key matches
+                        // (server backup = authoritative for original-name keys after migration)
+                        Object.assign(brandOverrides, serverOverrides);
+                        serverCustom.forEach(function(sb) {
+                            var exists = customBrands.some(function(lb) { return lb.id === sb.id || lb.name === sb.name; });
+                            if (!exists) customBrands.push(sb);
+                        });
+                    }
+                    // Migrate stale override keys (new-name → original-name)
+                    migrateOverridesIfNeeded();
+                    buildBrandIndex();
+                    loadCustomBrandsIntoData();
+                    updateFavoriteCount();
+                    updateAZFavorites();
+                });
         })
         .catch(function(err) {
             console.error('brands.json 로드 실패:', err);
+            migrateOverridesIfNeeded();
+            buildBrandIndex();
+            loadCustomBrandsIntoData();
+            updateFavoriteCount();
+            updateAZFavorites();
         });
+
+    const searchInput = document.getElementById('brandSearch');
 
     const searchInput = document.getElementById('brandSearch');
     if (searchInput) {
