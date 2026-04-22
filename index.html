@@ -2422,12 +2422,14 @@ function archiveBrandToCategory(id, category) {
     if (catPage) catPage.innerHTML = '';
     var archivePage = document.getElementById('my_archive');
     if (archivePage) archivePage.innerHTML = '';
+    updateArchiveCount();
+    showToast(getCategoryDisplayName(category) + ' 카테고리로 이동되었습니다.');
     if (document.getElementById('my_archive').classList.contains('active')) showPage('my_archive');
 }
 
 function updateArchiveCount() {
     const el = document.getElementById('archiveCount');
-    if (el) el.textContent = customBrands.length + ' BRANDS →';
+    if (el) el.textContent = customBrands.filter(function(b) { return !b.archivedCategory; }).length + ' BRANDS →';
 }
 
 function getCategoryDisplayName(cat) {
@@ -2522,13 +2524,11 @@ async function generateBrandCard() {
 
     const country = document.getElementById('brandCountryInput').value.trim();
     const generateBtn = document.getElementById('generateBtn');
-    const preview = document.getElementById('generatedPreview');
 
     generateBtn.disabled = true;
     generateBtn.textContent = '생성 중...';
     document.getElementById('saveBtn').style.display = 'none';
-    preview.style.display = 'block';
-    preview.innerHTML = '<div class="generating-indicator">✦ AI가 브랜드 카드를 생성하고 있습니다...</div>';
+    document.getElementById('generatedEditFields').style.display = 'none';
 
     const prompt = '당신은 패션/라이프스타일 브랜드 큐레이터입니다. 다음 브랜드의 아카이브 카드를 작성해주세요.\n\n' +
         '브랜드명: ' + brandName + '\n' +
@@ -2558,7 +2558,7 @@ async function generateBrandCard() {
         showGeneratedPreview(brandData);
 
     } catch (err) {
-        preview.innerHTML = '<div class="generating-indicator" style="color:#c0392b;">오류: ' + err.message + '</div>';
+        showToast('생성 오류: ' + err.message, 4000);
         generateBtn.disabled = false;
         generateBtn.textContent = 'AI 카드 생성';
     }
@@ -3029,11 +3029,12 @@ function showPage(cat) {
         html += '<div class="page-hero">';
         html += '<h1 class="page-title">My Archive</h1>';
         html += '<p class="page-subtitle">내가 직접 발견하고 아카이빙한 브랜드들.</p>';
-        html += '<p class="brand-count">' + customBrands.length + ' BRANDS</p>';
+        var visibleBrands = customBrands.filter(function(b) { return !b.archivedCategory; });
+        html += '<p class="brand-count">' + visibleBrands.length + ' BRANDS</p>';
         html += '<button class="share-btn" onclick="openCreateModal()">+ 브랜드 추가</button>';
         html += '</div>';
 
-        if (customBrands.length === 0) {
+        if (visibleBrands.length === 0) {
             html += '<div style="text-align:center;padding:100px 20px;color:var(--bronze);">';
             html += '<p style="font-size:2.5rem;margin-bottom:20px;">✦</p>';
             html += '<p style="font-size:1.1rem;margin-bottom:10px;">아직 아카이빙한 브랜드가 없습니다</p>';
@@ -3042,7 +3043,7 @@ function showPage(cat) {
             html += '</div>';
         } else {
             html += '<div class="brands-grid">';
-            customBrands.forEach(function(b, index) {
+            visibleBrands.forEach(function(b, index) {
                 html += makeBrandCardHTML(b, index, 'my_archive', true);
             });
             html += '</div>';
@@ -3341,7 +3342,9 @@ function confirmBackupStep1() {
         status.style.color = 'var(--gold)';
         status.textContent = '서버에 저장 중...';
         var overrideCount = Object.keys(brandOverrides).length;
-        if (overrideCount === 0) {
+        var customCount = customBrands.length;
+        var totalCount = overrideCount + customCount;
+        if (totalCount === 0) {
             status.style.color = '#c0392b';
             status.textContent = '저장할 편집 내용이 없습니다.';
             document.getElementById('backupStep1Btns').style.display = 'block';
@@ -3349,11 +3352,11 @@ function confirmBackupStep1() {
         }
         backupToGitHub(savedToken).then(function() {
             status.style.color = '#27ae60';
-            status.textContent = '✓ 서버 저장 완료! (' + overrideCount + '건 편집 내용)';
+            status.textContent = '✓ brands.json 반영 완료! (수정 ' + overrideCount + '건, 신규 ' + customCount + '건) 새로고침 중...';
             setTimeout(function() {
                 closeBackupModal();
-                showToast('백업 완료 ✓  편집 내용 ' + overrideCount + '건 저장됨');
-            }, 3000);
+                window.location.reload();
+            }, 2000);
         }).catch(function(e) {
             status.style.color = '#c0392b';
             status.textContent = '오류: ' + e.message;
@@ -3377,7 +3380,9 @@ async function confirmBackupStep2() {
         return;
     }
     var overrideCount = Object.keys(brandOverrides).length;
-    if (overrideCount === 0) {
+    var customCount = customBrands.length;
+    var totalCount = overrideCount + customCount;
+    if (totalCount === 0) {
         status.style.color = '#c0392b';
         status.textContent = '저장할 편집 내용이 없습니다. 브랜드를 먼저 편집해주세요.';
         return;
@@ -3386,18 +3391,16 @@ async function confirmBackupStep2() {
     btn.disabled = true;
     btn.textContent = '저장 중...';
     status.style.color = 'var(--gold)';
-    status.textContent = '서버에 저장 중...';
+    status.textContent = 'brands.json에 반영 중...';
     try {
         await backupToGitHub(token);
         status.style.color = '#27ae60';
-        status.textContent = '✓ 서버 저장 완료! (' + overrideCount + '건 편집 내용)';
+        status.textContent = '✓ brands.json 반영 완료! (수정 ' + overrideCount + '건, 신규 ' + customCount + '건) 새로고침 중...';
         btn.textContent = '완료';
         setTimeout(function() {
             closeBackupModal();
-            btn.disabled = false;
-            btn.textContent = '백업 실행';
-            showToast('백업 완료 ✓  편집 내용 ' + overrideCount + '건 저장됨');
-        }, 3000);
+            window.location.reload();
+        }, 2000);
     } catch(e) {
         status.style.color = '#c0392b';
         status.textContent = '오류: ' + e.message;
@@ -3409,42 +3412,98 @@ async function confirmBackupStep2() {
 async function backupToGitHub(pat) {
     var owner = 'songminki-cloud';
     var repo = 'invited_brand_new2';
-    var path = 'brands_backup.json';
-    var payload = {
-        savedAt: new Date().toISOString(),
-        overrides: brandOverrides,
-        customBrands: customBrands
-    };
-    var content = JSON.stringify(payload, null, 2);
-    // UTF-8 safe base64
-    var bytes = new TextEncoder().encode(content);
-    var binStr = Array.from(bytes, function(b) { return String.fromCharCode(b); }).join('');
-    var b64 = btoa(binStr);
-
     var headers = {
         'Authorization': 'Bearer ' + pat,
         'Accept': 'application/vnd.github.v3+json',
         'Content-Type': 'application/json'
     };
-    // Get current SHA if file exists
-    var sha = null;
-    var getRes = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path, { headers: headers });
-    if (getRes.ok) {
-        var getData = await getRes.json();
-        sha = getData.sha;
-    }
-    var body = { message: 'Backup custom brands (' + customBrands.length + '개)', content: b64 };
-    if (sha) body.sha = sha;
 
-    var putRes = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path, {
+    function toB64(str) {
+        var bytes = new TextEncoder().encode(str);
+        var binStr = Array.from(bytes, function(b) { return String.fromCharCode(b); }).join('');
+        return btoa(binStr);
+    }
+
+    // 1. Fetch current brands.json from GitHub
+    var brandsPath = 'brands.json';
+    var brandsGetRes = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + brandsPath, { headers: headers });
+    if (!brandsGetRes.ok) throw new Error('brands.json 읽기 실패: ' + brandsGetRes.status);
+    var brandsFileData = await brandsGetRes.json();
+    var brandsSha = brandsFileData.sha;
+    var rawB64 = brandsFileData.content.replace(/\n/g, '');
+    var brandsJsonStr = new TextDecoder().decode(Uint8Array.from(atob(rawB64), function(c) { return c.charCodeAt(0); }));
+    var brandsJson = JSON.parse(brandsJsonStr);
+
+    // 2. Apply brandOverrides directly to brands.json data
+    Object.keys(brandOverrides).forEach(function(origName) {
+        var ov = brandOverrides[origName];
+        for (var cat in brandsJson) {
+            if (!Array.isArray(brandsJson[cat])) continue;
+            for (var i = 0; i < brandsJson[cat].length; i++) {
+                if (brandsJson[cat][i].name === origName) {
+                    var brand = brandsJson[cat][i];
+                    if (ov.name) brand.name = ov.name;
+                    if (ov.headline !== undefined) brand.headline = ov.headline;
+                    if (ov.definition !== undefined) brand.definition = ov.definition;
+                    if (ov.description !== undefined) brand.description = ov.description;
+                    brand.homepage = ov.homepage || '';
+                    break;
+                }
+            }
+        }
+    });
+
+    // 3. Write customBrands to their categories in brands.json
+    customBrands.forEach(function(brand) {
+        var cat = brand.archivedCategory || 'my_archive';
+        if (!brandsJson[cat]) brandsJson[cat] = [];
+        var alreadyIn = brandsJson[cat].some(function(b) { return b.name === brand.name; });
+        if (!alreadyIn) {
+            var entry = {
+                name: brand.name,
+                country: brand.country || '',
+                headline: brand.headline || '',
+                definition: brand.definition || '',
+                description: brand.description || ''
+            };
+            if (brand.homepage) entry.homepage = brand.homepage;
+            brandsJson[cat].push(entry);
+        }
+    });
+
+    // 4. Write updated brands.json
+    var newBrandsContent = JSON.stringify(brandsJson, null, 2);
+    var putBrandsRes = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + brandsPath, {
         method: 'PUT',
         headers: headers,
-        body: JSON.stringify(body)
+        body: JSON.stringify({
+            message: '브랜드 편집 반영 (수정 ' + Object.keys(brandOverrides).length + '건, 신규 ' + customBrands.length + '건)',
+            content: toB64(newBrandsContent),
+            sha: brandsSha
+        })
     });
-    if (!putRes.ok) {
-        var err = await putRes.json().catch(function() { return {}; });
-        throw new Error(err.message || 'GitHub API 오류 ' + putRes.status);
+    if (!putBrandsRes.ok) {
+        var errData = await putBrandsRes.json().catch(function() { return {}; });
+        throw new Error('brands.json 쓰기 실패: ' + (errData.message || putBrandsRes.status));
     }
+
+    // 5. Reset brands_backup.json to empty state
+    var emptyPayload = JSON.stringify({ savedAt: new Date().toISOString(), overrides: {}, customBrands: [] }, null, 2);
+    var backupPath = 'brands_backup.json';
+    var backupSha = null;
+    var backupGetRes = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + backupPath, { headers: headers });
+    if (backupGetRes.ok) { backupSha = (await backupGetRes.json()).sha; }
+    var clearBody = { message: '백업 완료 후 임시 파일 초기화', content: toB64(emptyPayload) };
+    if (backupSha) clearBody.sha = backupSha;
+    await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + backupPath, {
+        method: 'PUT', headers: headers, body: JSON.stringify(clearBody)
+    });
+
+    // 6. Clear local overrides and custom brands
+    brandOverrides = {};
+    saveBrandOverrides();
+    customBrands = [];
+    saveCustomBrands();
 }
 
 // Initialize search on page load
