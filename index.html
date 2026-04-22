@@ -2371,7 +2371,7 @@ function addCustomBrandsToAZList() {
     var list = document.getElementById('brandIndexList');
     if (!list) return;
     list.querySelectorAll('.az-custom').forEach(function(el) { el.remove(); });
-    customBrands.forEach(function(brand) {
+    customBrands.filter(function(brand) { return !brand.archivedCategory; }).forEach(function(brand) {
         var div = document.createElement('div');
         div.className = 'brand-index-item az-custom';
         if (favorites.includes(brand.name)) div.classList.add('favorited');
@@ -2420,6 +2420,8 @@ function archiveBrandToCategory(id, category) {
     var archivePage = document.getElementById('my_archive');
     if (archivePage) archivePage.innerHTML = '';
     updateArchiveCount();
+    rebuildAZList();
+    addCustomBrandsToAZList();
     showToast(getCategoryDisplayName(category) + ' 카테고리로 이동되었습니다.');
     if (document.getElementById('my_archive').classList.contains('active')) showPage('my_archive');
 }
@@ -2674,6 +2676,7 @@ function loadCustomBrandsIntoData() {
         }
     });
     updateArchiveCount();
+    rebuildAZList();
     addCustomBrandsToAZList();
 }
 
@@ -3058,7 +3061,9 @@ function showPage(cat) {
     }
 
     // Regular category pages
-    if (page.innerHTML === '') {
+    var hasCustomInCat = customBrands.some(function(b) { return b.archivedCategory === cat; });
+    if (page.innerHTML === '' || hasCustomInCat) {
+        page.innerHTML = '';
         const info = INFO[cat];
         const brands = DATA[cat];
         
@@ -3075,8 +3080,14 @@ function showPage(cat) {
         
         html += '<div class="brands-grid">';
 
-        brands.filter(b => !hiddenBrands.has(b.name)).forEach((b, index) => {
-            html += makeBrandCardHTML(b, index, cat, false);
+        var sortedBrands = brands.filter(b => !hiddenBrands.has(b.name)).slice().sort(function(a, b) {
+            var na = (brandOverrides[a.name] && brandOverrides[a.name].name) || a.name;
+            var nb = (brandOverrides[b.name] && brandOverrides[b.name].name) || b.name;
+            return na.localeCompare(nb, 'ko-KR');
+        });
+        sortedBrands.forEach((b, index) => {
+            var isCustomBrand = !!b.isCustom;
+            html += makeBrandCardHTML(b, index, cat, isCustomBrand);
         });
 
         html += '</div>';
