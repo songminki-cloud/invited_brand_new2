@@ -305,6 +305,14 @@
       "definition": "러닝·사이클링·하이킹을 위한 테크니컬 스포츠웨어 브랜드",
       "description": "포탈은 2023년 런던에서 시작된 테크니컬 스포츠웨어 브랜드입니다. 러닝, 사이클링, 하이킹처럼 경계를 넘나드는 움직임을 위해 기능적인 의류와 장비를 만들며, 오슬로·밴쿠버·런던에서 비롯된 감각을 바탕으로 현대적인 아웃도어 활동을 제안합니다.",
       "homepage": "https://portal-brand.com/"
+    },
+    {
+      "name": "칼하트 (Carhartt)",
+      "country": "Japan",
+      "headline": "Workwear for Urban Style",
+      "definition": "내구성이 강한 워크웨어 브랜드",
+      "description": "칼하트는 내구성이 뛰어난 워크웨어로 유명한 브랜드로, 일상에서의 편안함과 실용성을 강조합니다. 미국에서 시작된 브랜드임에도, 일본에서도 인기 있으며, 스트리트 패션과 결합하여 새로운 스타일을 제안합니다. 다양한 아이템들을 통해 지속 가능한 패션을 지향하고 있으며, 품질 높은 소재와 클래식한 디자인을 특징으로 하고 있습니다.",
+      "homepage": "https://www.carhartt-wip.co.kr/?srsltid=AfmBOop_upAeNsNEzBulYZlFexu855R03AW6C7UT040fZQvOCwj08_XF"
     }
   ],
   "visual": [
@@ -503,6 +511,14 @@
       "headline": "Handmade Soulmate",
       "definition": "어른을 위한 수제 테디베어",
       "description": "러시아 작가가 디자인한 핸드메이드 곰 인형. 정교한 관절과 사랑스러운 표정으로 키덜트족의 소장 욕구를 자극하는 프리미엄 아트 토이입니다."
+    },
+    {
+      "name": "팔레스 (Palace)",
+      "country": "UK",
+      "headline": "Skate culture meets streetwear",
+      "definition": "스케이트보드와 스트리트웨어 융합",
+      "description": "Palace는 런던에서 출발한 스케이트보드 브랜드로, 스케이트 문화와 스트리트웨어를 결합한 독특한 스타일을 제공합니다. 그래픽 디자인과 유머가 가미된 제품들이 특징이며, 스케이트보드 커뮤니티와 깊은 연관이 있습니다. 리미티드 에디션 제품과 드롭 컬처를 통해 희소성도 강조합니다.",
+      "homepage": "https://www.palaceskateboards.com"
     }
   ],
   "scarcity": [
