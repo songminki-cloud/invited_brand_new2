@@ -1856,6 +1856,11 @@ footer {
 
         <!-- Editable fields shown after AI generation (or for manual entry) -->
         <div id="generatedEditFields" style="display:none; margin-top:18px;">
+            <div id="verificationWarning" style="display:none; background:rgba(180,120,40,0.12); border:1px solid rgba(180,120,40,0.4); border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:0.85rem; color:#8B6914; line-height:1.5;">
+                <strong>⚠ 정보 불확실</strong><br>
+                <span id="verificationReason"></span><br>
+                <span style="opacity:0.8;">각 항목을 직접 확인하고 수정해주세요. Homepage는 특히 검색 후 입력하세요.</span>
+            </div>
             <div class="form-group">
                 <label class="form-label">Headline <span style="opacity:0.6;">(영문 태그라인)</span></label>
                 <input type="text" class="form-input" id="pendingHeadline">
@@ -1867,6 +1872,10 @@ footer {
             <div class="form-group">
                 <label class="form-label">소개글</label>
                 <textarea class="form-textarea" id="pendingDescription"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Homepage <span style="opacity:0.6;">(공식 URL · 선택)</span></label>
+                <input type="text" class="form-input" id="pendingHomepage" placeholder="https://...">
             </div>
             <div class="form-group">
                 <label class="form-label">카테고리</label>
@@ -2489,6 +2498,8 @@ function closeCreateModal() {
     document.getElementById('pendingHeadline').value = '';
     document.getElementById('pendingDefinition').value = '';
     document.getElementById('pendingDescription').value = '';
+    document.getElementById('pendingHomepage').value = '';
+    document.getElementById('verificationWarning').style.display = 'none';
     document.getElementById('saveBtn').style.display = 'none';
     const btn = document.getElementById('generateBtn');
     btn.disabled = false;
@@ -2565,16 +2576,29 @@ async function generateBrandCard() {
     document.getElementById('saveBtn').style.display = 'none';
     document.getElementById('generatedEditFields').style.display = 'none';
 
-    const prompt = '당신은 패션/라이프스타일 브랜드 큐레이터입니다. 다음 브랜드의 아카이브 카드를 작성해주세요.\n\n' +
+    const prompt =
+        '당신은 패션/라이프스타일 브랜드 아카이버입니다. 아래 브랜드에 대해 실제로 알고 있는 정보만을 사용해 카드를 작성하세요.\n\n' +
         '브랜드명: ' + brandName + '\n' +
-        (country ? '국가: ' + country : '국가는 브랜드 정보를 바탕으로 추정해주세요.') + '\n\n' +
-        '아래 JSON 형식으로만 응답해주세요 (마크다운 없이, 순수 JSON 객체만):\n' +
+        (country ? '국가: ' + country : '') + '\n\n' +
+
+        '━━ 할루시네이션 방지 규칙 (반드시 준수) ━━\n' +
+        '1. 확실히 아는 정보만 작성. 모르면 빈 문자열("")로 두세요.\n' +
+        '2. homepage: 공식 웹사이트 URL이 100% 확실한 경우만 입력. 추측하거나 조합하지 마세요. 불확실하면 반드시 "" (빈 문자열).\n' +
+        '3. description: 검증된 사실만 서술. 확인되지 않은 연도·협업·창립자명·수상 이력은 포함하지 마세요. 불확실한 내용은 "알려진 바에 따르면" 등으로 유보 표현 사용.\n' +
+        '4. name: 실제로 널리 쓰이는 공식 명칭 그대로. 임의로 한국어화하거나 변형하지 마세요.\n' +
+        '5. country: 공식적으로 알려진 발원국. 불확실하면 "".\n' +
+        '6. 브랜드를 잘 모르거나 정보가 부족하다면 needsVerification: true, 이유를 verificationReason에 한국어로 기술.\n\n' +
+
+        '아래 JSON 형식으로만 응답 (마크다운 없이, 순수 JSON 객체만):\n' +
         '{\n' +
+        '  "needsVerification": false,\n' +
+        '  "verificationReason": "",\n' +
         '  "name": "한국어명 (영문명) 형식. 예: 메종 마르지엘라 (Maison Margiela). 한국 브랜드면 한국어명만. 영미권이면 영문명만",\n' +
-        '  "country": "발원 국가 (영어, 예: France / Japan / Korea / USA)",\n' +
+        '  "country": "발원 국가 (영어, 예: France / Japan / Korea / USA). 불확실하면 빈 문자열",\n' +
         '  "headline": "영문 태그라인 (3-5단어, 브랜드 본질을 함축하는 시적 표현)",\n' +
         '  "definition": "한국어 한 줄 정의 (15-25자, 브랜드 핵심 정체성)",\n' +
-        '  "description": "한국어 설명 (150-250자, 브랜드 역사·철학·특징·주목받는 이유를 서술형으로)",\n' +
+        '  "description": "한국어 설명 (150-250자). 확인된 사실만. 불확실한 세부정보는 생략",\n' +
+        '  "homepage": "공식 URL (100% 확실한 경우만). 불확실하면 빈 문자열",\n' +
         '  "category": "philosophy 또는 visual 또는 scarcity 또는 narrative 또는 inspiration 또는 select_shop"\n' +
         '}\n\n' +
         '카테고리 정의:\n' +
@@ -2601,12 +2625,22 @@ async function generateBrandCard() {
 
 function showGeneratedPreview(brandData) {
     pendingBrandData = brandData;
-    // Fill editable fields so user can tweak before saving
     document.getElementById('pendingHeadline').value = brandData.headline || '';
     document.getElementById('pendingDefinition').value = brandData.definition || '';
     document.getElementById('pendingDescription').value = brandData.description || '';
+    document.getElementById('pendingHomepage').value = brandData.homepage || '';
     var catSel = document.getElementById('pendingCategory');
     if (catSel && brandData.category) catSel.value = brandData.category;
+
+    // Show verification warning if AI flagged uncertainty
+    var warn = document.getElementById('verificationWarning');
+    var reasonEl = document.getElementById('verificationReason');
+    if (brandData.needsVerification) {
+        reasonEl.textContent = brandData.verificationReason || '이 브랜드에 대한 정보가 불확실합니다.';
+        warn.style.display = 'block';
+    } else {
+        warn.style.display = 'none';
+    }
 
     document.getElementById('generatedEditFields').style.display = 'block';
     document.getElementById('generateBtn').textContent = '다시 생성';
@@ -2620,12 +2654,14 @@ function saveGeneratedBrand() {
     var headline = document.getElementById('pendingHeadline').value.trim();
     var definition = document.getElementById('pendingDefinition').value.trim();
     var description = document.getElementById('pendingDescription').value.trim();
+    var homepage = document.getElementById('pendingHomepage').value.trim();
     var category = document.getElementById('pendingCategory').value;
     if (!name) { alert('브랜드명을 입력해주세요.'); return; }
     if (!description) { alert('소개글을 입력해주세요.'); return; }
     var brandData = Object.assign({}, pendingBrandData || {}, {
         name: name, country: country || (pendingBrandData && pendingBrandData.country) || '',
-        headline: headline, definition: definition, description: description, category: category
+        headline: headline, definition: definition, description: description,
+        homepage: homepage, category: category
     });
     const brand = Object.assign({}, brandData, {
         no: '★' + (customBrands.length + 1),
