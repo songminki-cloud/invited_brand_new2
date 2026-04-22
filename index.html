@@ -2408,22 +2408,43 @@ function showArchiveSelector(id) {
 function archiveBrandToCategory(id, category) {
     var idx = customBrands.findIndex(function(b) { return b.id === id; });
     if (idx === -1) return;
-    customBrands[idx].archivedCategory = category;
+    var brand = customBrands[idx];
+    brand.archivedCategory = category;
     saveCustomBrands();
+
+    // Add to DATA[category] as a clean regular-brand object (no isCustom / archivedCategory)
     if (!DATA[category]) DATA[category] = [];
-    var alreadyIn = DATA[category].some(function(b) { return b.name === customBrands[idx].name; });
-    if (!alreadyIn) DATA[category].push(Object.assign({}, customBrands[idx], {category: category}));
-    var ab = allBrands.find(function(b) { return b.name === customBrands[idx].name; });
-    if (ab) { ab.category = category; ab.categoryDisplay = getCategoryDisplayName(category); }
+    var alreadyIn = DATA[category].some(function(b) { return b.name === brand.name; });
+    if (!alreadyIn) {
+        DATA[category].push({
+            name: brand.name,
+            country: brand.country || '',
+            headline: brand.headline || '',
+            definition: brand.definition || '',
+            description: brand.description || '',
+            homepage: brand.homepage || '',
+            category: category
+        });
+    }
+
+    // Update allBrands entry
+    var ab = allBrands.find(function(b) { return b.name === brand.name; });
+    if (ab) {
+        ab.category = category;
+        ab.categoryDisplay = getCategoryDisplayName(category);
+    }
+
+    // Clear page caches
     var catPage = document.getElementById(category);
     if (catPage) catPage.innerHTML = '';
     var archivePage = document.getElementById('my_archive');
     if (archivePage) archivePage.innerHTML = '';
+
     updateArchiveCount();
     rebuildAZList();
     addCustomBrandsToAZList();
-    showToast(getCategoryDisplayName(category) + ' 카테고리로 이동되었습니다. 이동된 카테고리로 이동합니다.');
-    setTimeout(function() { showPage(category); }, 800);
+    showToast(getCategoryDisplayName(category) + ' 카테고리로 이동되었습니다.');
+    setTimeout(function() { showPage(category); }, 600);
 }
 
 function updateArchiveCount() {
@@ -2672,7 +2693,17 @@ function loadCustomBrandsIntoData() {
         if (brand.archivedCategory) {
             if (!DATA[brand.archivedCategory]) DATA[brand.archivedCategory] = [];
             var exists = DATA[brand.archivedCategory].some(function(b) { return b.name === brand.name; });
-            if (!exists) DATA[brand.archivedCategory].push(Object.assign({}, brand, {category: brand.archivedCategory}));
+            if (!exists) {
+                DATA[brand.archivedCategory].push({
+                    name: brand.name,
+                    country: brand.country || '',
+                    headline: brand.headline || '',
+                    definition: brand.definition || '',
+                    description: brand.description || '',
+                    homepage: brand.homepage || '',
+                    category: brand.archivedCategory
+                });
+            }
         }
     });
     updateArchiveCount();
@@ -3071,7 +3102,17 @@ function showPage(cat) {
         customBrands.forEach(function(cb) {
             if (cb.archivedCategory === cat) {
                 var alreadyIn = catBrands.some(function(b) { return b.name === cb.name; });
-                if (!alreadyIn) catBrands.push(Object.assign({}, cb, {category: cat}));
+                if (!alreadyIn) {
+                    catBrands.push({
+                        name: cb.name,
+                        country: cb.country || '',
+                        headline: cb.headline || '',
+                        definition: cb.definition || '',
+                        description: cb.description || '',
+                        homepage: cb.homepage || '',
+                        category: cat
+                    });
+                }
             }
         });
 
@@ -3094,8 +3135,7 @@ function showPage(cat) {
             return na.localeCompare(nb, 'ko-KR');
         });
         sortedBrands.forEach((b, index) => {
-            var isCustomBrand = !!b.isCustom;
-            html += makeBrandCardHTML(b, index, cat, isCustomBrand);
+            html += makeBrandCardHTML(b, index, cat, false);
         });
 
         html += '</div>';
