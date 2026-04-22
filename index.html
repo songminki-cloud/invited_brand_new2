@@ -2176,9 +2176,24 @@ function saveEditedBrand() {
 
     // Update customBrands directly (they are user-defined, not from brands.json)
     var ci = customBrands.findIndex(function(b) { return b.name === oldName; });
-    if (ci !== -1) { Object.assign(customBrands[ci], ov); saveCustomBrands(); }
-
-    // DO NOT update DATA — overrides are applied at render time via applyOverrides()
+    if (ci !== -1) {
+        Object.assign(customBrands[ci], ov);
+        saveCustomBrands();
+        // Keep DATA in sync for custom brands promoted to a category
+        var archivedCat = customBrands[ci].archivedCategory;
+        if (archivedCat && DATA[archivedCat]) {
+            var di = DATA[archivedCat].findIndex(function(b) { return b.name === oldName; });
+            if (di !== -1) {
+                Object.assign(DATA[archivedCat][di], {
+                    name: ov.name || oldName,
+                    headline: ov.headline || DATA[archivedCat][di].headline,
+                    definition: ov.definition || DATA[archivedCat][di].definition,
+                    description: ov.description || DATA[archivedCat][di].description,
+                    homepage: ov.homepage !== undefined ? ov.homepage : DATA[archivedCat][di].homepage
+                });
+            }
+        }
+    }
 
     buildBrandIndex();
     addCustomBrandsToAZList();
@@ -3104,7 +3119,12 @@ function showPage(cat) {
         var catBrands = (DATA[cat] || []).slice();
         customBrands.forEach(function(cb) {
             if (cb.archivedCategory === cat) {
-                var alreadyIn = catBrands.some(function(b) { return b.name === cb.name; });
+                var alreadyIn = catBrands.some(function(b) {
+                    if (b.name === cb.name) return true;
+                    // Also match when the DATA entry still has the old name but override renamed it
+                    var overrideName = brandOverrides[b.name] && brandOverrides[b.name].name;
+                    return overrideName && overrideName === cb.name;
+                });
                 if (!alreadyIn) {
                     catBrands.push({
                         name: cb.name,
