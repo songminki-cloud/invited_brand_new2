@@ -2422,8 +2422,8 @@ function archiveBrandToCategory(id, category) {
     updateArchiveCount();
     rebuildAZList();
     addCustomBrandsToAZList();
-    showToast(getCategoryDisplayName(category) + ' 카테고리로 이동되었습니다.');
-    if (document.getElementById('my_archive').classList.contains('active')) showPage('my_archive');
+    showToast(getCategoryDisplayName(category) + ' 카테고리로 이동되었습니다. 이동된 카테고리로 이동합니다.');
+    setTimeout(function() { showPage(category); }, 800);
 }
 
 function updateArchiveCount() {
@@ -3065,22 +3065,30 @@ function showPage(cat) {
     if (page.innerHTML === '' || hasCustomInCat) {
         page.innerHTML = '';
         const info = INFO[cat];
-        const brands = DATA[cat];
-        
+
+        // Merge DATA[cat] with any custom brands assigned to this category
+        var catBrands = (DATA[cat] || []).slice();
+        customBrands.forEach(function(cb) {
+            if (cb.archivedCategory === cat) {
+                var alreadyIn = catBrands.some(function(b) { return b.name === cb.name; });
+                if (!alreadyIn) catBrands.push(Object.assign({}, cb, {category: cat}));
+            }
+        });
+
         let html = '<div class="header">';
         html += '<button class="back-link" onclick="showPage(\'index\')">← 돌아가기</button>';
         html += '<div class="logo">M·MALL INVITED</div>';
         html += '</div>';
-        
+
         html += '<div class="page-hero">';
         html += '<h1 class="page-title">' + info.title + '</h1>';
         html += '<p class="page-subtitle">' + info.subtitle + '</p>';
-        html += '<p class="brand-count">' + info.count + ' BRANDS</p>';
+        html += '<p class="brand-count">' + catBrands.length + ' BRANDS</p>';
         html += '</div>';
-        
+
         html += '<div class="brands-grid">';
 
-        var sortedBrands = brands.filter(b => !hiddenBrands.has(b.name)).slice().sort(function(a, b) {
+        var sortedBrands = catBrands.filter(b => !hiddenBrands.has(b.name)).sort(function(a, b) {
             var na = (brandOverrides[a.name] && brandOverrides[a.name].name) || a.name;
             var nb = (brandOverrides[b.name] && brandOverrides[b.name].name) || b.name;
             return na.localeCompare(nb, 'ko-KR');
