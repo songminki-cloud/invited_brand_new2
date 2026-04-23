@@ -2623,11 +2623,17 @@ function extractBrandJSON(text) {
 
 // ── Extract short brand name from long description ──────────────────────────
 function extractSearchTerm(desc) {
-    // Take the first line, then the first comma/semicolon chunk, then cap at 60 chars
-    // e.g. "Ernie Palo, 어니파로, Japanese brand..." → "Ernie Palo"
     var first = desc.split('\n')[0].trim();
-    var chunk = first.split(/[,;]/)[0].trim();
-    return chunk.slice(0, 60) || desc.slice(0, 60);
+    var parts = first.split(/[,;]/);
+    var name = parts[0].trim();
+    // Include a short alternate name (e.g. "알레시, Alessi" → "알레시 Alessi")
+    if (parts.length > 1) {
+        var alt = parts[1].trim();
+        if (alt.length > 0 && alt.length < 40) {
+            name = (name + ' ' + alt).trim();
+        }
+    }
+    return name.slice(0, 80) || desc.slice(0, 60);
 }
 
 // ── Extract only Latin (English) words from a potentially mixed query ────────
@@ -2640,13 +2646,11 @@ function extractLatinWords(text) {
 // ── Check if AI-identified name actually matches the user's query ────────────
 function isRelevantMatch(shortQuery, officialName) {
     if (!officialName) return false;
-    // Prefer Latin words for matching (results are usually in English)
     var latinWords = extractLatinWords(shortQuery);
-    var allWords = shortQuery.toLowerCase().split(/[\s,().\-\/]+/).filter(function(w) { return w.length > 1; });
-    var checkWords = latinWords.length > 0 ? latinWords : allWords;
-    if (checkWords.length === 0) return true;
+    // All-Korean query: can't verify via string match against English name
+    if (latinWords.length === 0) return true;
     var nameLower = officialName.toLowerCase();
-    return checkWords.every(function(w) { return nameLower.includes(w); });
+    return latinWords.every(function(w) { return nameLower.includes(w); });
 }
 
 // ── Check if web search result actually relates to the query ─────────────────
@@ -2803,10 +2807,15 @@ async function findAndCreateBrand() {
     const generateBtn = document.getElementById('generateBtn');
     const shortQuery = extractSearchTerm(desc);  // Always use short term for searches
 
-    // Extra text beyond the brand name — user may have pasted a description
-    const extraText = desc.length > shortQuery.length + 3
-        ? desc.slice(shortQuery.length).replace(/^[\s,;\-\.]+/, '').trim()
-        : '';
+    // Extra text beyond the recognized brand name parts
+    var _firstLine = desc.split('\n')[0].trim();
+    var _firstParts = _firstLine.split(/[,;]/);
+    var _usedParts = (_firstParts.length > 1 && _firstParts[1].trim().length < 40) ? 2 : 1;
+    const extraText = _firstParts.slice(_usedParts)
+        .concat(desc.split('\n').slice(1))
+        .map(function(s) { return s.trim(); })
+        .filter(function(s) { return s.length > 0; })
+        .join(' ');
 
     generateBtn.disabled = true;
     generateBtn.textContent = '찾는 중...';
