@@ -1958,6 +1958,20 @@ footer {
         </div>
 
         <button class="generate-btn" onclick="saveApiKeyAndClose()">저장</button>
+
+        <hr class="modal-divider" style="margin:20px 0;">
+        <p class="modal-subtitle" style="font-size:0.8rem;margin-bottom:12px;opacity:0.8;">웹 검색 강화 <span style="opacity:0.6;">(선택 · 소규모 브랜드 검색 정확도 향상)</span></p>
+        <div class="form-group">
+            <label class="form-label">Brave Search API Key</label>
+            <input type="password" class="form-input" id="braveApiKeyInput"
+                   placeholder="BSA..."
+                   onkeydown="if(event.key==='Enter')saveBraveKeyAndClose()">
+            <p class="api-key-hint" style="margin-top:6px;">
+                월 2,000회 무료 · 키 없으면 Wikipedia만 사용<br>
+                <a href="https://api.search.brave.com/" target="_blank" rel="noopener" style="color:var(--gold);">api.search.brave.com</a>에서 발급 → API Keys → Free Data for Search
+            </p>
+        </div>
+        <button class="save-btn" onclick="saveBraveKeyAndClose()" style="max-width:160px;">Brave 키 저장</button>
     </div>
 </div>
 
@@ -2545,12 +2559,25 @@ function openApiKeyModal() {
     document.querySelectorAll('.provider-option').forEach(function(el) {
         el.classList.toggle('active', el.dataset.provider === selectedProvider);
     });
+    document.getElementById('braveApiKeyInput').value = localStorage.getItem('mmall_brave_api_key') || '';
     document.getElementById('apiKeyModal').classList.add('active');
     setTimeout(function() { document.getElementById('apiKeyInput').focus(); }, 120);
 }
 
 function closeApiKeyModal() {
     document.getElementById('apiKeyModal').classList.remove('active');
+}
+
+function saveBraveKeyAndClose() {
+    const braveKey = document.getElementById('braveApiKeyInput').value.trim();
+    if (braveKey) {
+        localStorage.setItem('mmall_brave_api_key', braveKey);
+        showToast('Brave Search API 키가 저장되었습니다.', 2500);
+    } else {
+        localStorage.removeItem('mmall_brave_api_key');
+        showToast('Brave Search 키를 삭제했습니다.', 2000);
+    }
+    closeApiKeyModal();
 }
 
 function saveApiKeyAndClose() {
@@ -2606,10 +2633,41 @@ async function identifyBrand(provider, apiKey, desc, country) {
     return extractBrandJSON(content) || { found: false, confidence: 0 };
 }
 
+// ── Web search: Brave Search API (requires user key, most accurate) ──────────
+async function searchBraveForBrand(query) {
+    const braveKey = localStorage.getItem('mmall_brave_api_key');
+    if (!braveKey) return null;
+    try {
+        const res = await fetch(
+            'https://api.search.brave.com/res/v1/web/search?q=' +
+            encodeURIComponent(query) + '&count=5&search_lang=ko',
+            {
+                headers: {
+                    'Accept': 'application/json',
+                    'Accept-Encoding': 'gzip',
+                    'X-Subscription-Token': braveKey
+                }
+            }
+        );
+        if (!res.ok) return null;
+        const data = await res.json();
+        const results = data.web && data.web.results;
+        if (!results || results.length === 0) return null;
+        const extract = results.slice(0, 4).map(function(r) {
+            return '[' + r.title + '] ' + (r.description || '');
+        }).join('\n');
+        return { title: results[0].title, extract: extract, source: 'Brave Search' };
+    } catch(e) { return null; }
+}
+
 // ── Web search fallback: Wikipedia (free, CORS supported) ───────────────────
 async function searchWebForBrand(query) {
+    // 1. Try Brave Search first (most comprehensive, covers small brands)
+    const braveResult = await searchBraveForBrand(query);
+    if (braveResult) return braveResult;
+
+    // 2. Fallback: English Wikipedia
     try {
-        // Try English Wikipedia first
         const searchRes = await fetch(
             'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
             encodeURIComponent(query) + '&format=json&origin=*&srlimit=2'
@@ -2632,8 +2690,8 @@ async function searchWebForBrand(query) {
         }
     } catch(e) {}
 
+    // 3. Fallback: Korean Wikipedia
     try {
-        // Try Korean Wikipedia
         const krRes = await fetch(
             'https://ko.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
             encodeURIComponent(query) + '&format=json&origin=*&srlimit=2'
@@ -2731,8 +2789,8 @@ async function findAndCreateBrand() {
             if (!brandData) throw new Error('카드 생성에 실패했습니다. 다시 시도해주세요.');
             showGeneratedPreview(brandData);
         } else {
-            // Not found by AI → try web search
-            generateBtn.textContent = '웹 검색 중...';
+            // Not found by AI → try web search (Brave → Wikipedia)
+            generateBtn.textContent = localStorage.getItem('mmall_brave_api_key') ? 'Brave 검색 중...' : '웹 검색 중...';
             const webResult = await searchWebForBrand(desc);
 
             if (webResult) {
