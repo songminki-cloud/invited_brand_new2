@@ -1848,7 +1848,7 @@ footer {
                 <textarea class="form-input form-textarea" id="brandDescInput" rows="3"
                     placeholder="예: 발롱드파리, ballon de paris, 프랑스 하이엔드 스피커 브랜드&#10;예: 일본 셀렉트샵, 도쿄 베이스, 미니멀 패션 큐레이션"
                     style="resize:vertical;"
-                    onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey))searchBrand()"></textarea>
+                    onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey))findAndCreateBrand()"></textarea>
                 <p style="font-size:0.75rem;color:var(--bronze);margin-top:4px;opacity:0.7;">브랜드명·영문명·특징을 함께 적으면 더 정확하게 찾습니다.</p>
             </div>
             <div class="form-group">
@@ -1856,7 +1856,7 @@ footer {
                 <input type="text" class="form-input" id="brandCountryInput"
                        placeholder="예: France, Japan, Korea, USA ...">
             </div>
-            <button class="generate-btn" id="generateBtn" onclick="searchBrand()">브랜드 찾기</button>
+            <button class="generate-btn" id="generateBtn" onclick="findAndCreateBrand()">브랜드 찾기</button>
         </div>
 
         <!-- Not found section -->
@@ -2564,7 +2564,7 @@ function saveApiKeyAndClose() {
     closeApiKeyModal();
     const desc = document.getElementById('brandDescInput') && document.getElementById('brandDescInput').value.trim();
     if (document.getElementById('createBrandModal').classList.contains('active') && desc) {
-        searchBrand();
+        findAndCreateBrand();
     }
 }
 
@@ -2700,7 +2700,7 @@ async function generateBrandCard(provider, apiKey, brandName, country, webContex
 }
 
 // ── Main search flow ────────────────────────────────────────────────────────
-async function searchBrand() {
+async function findAndCreateBrand() {
     const desc = document.getElementById('brandDescInput').value.trim();
     if (!desc) { showToast('브랜드에 대해 설명해주세요.', 3000); return; }
 
