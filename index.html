@@ -3464,11 +3464,10 @@ function confirmBackupStep1() {
         }
         backupToGitHub(savedToken).then(function() {
             status.style.color = '#27ae60';
-            status.textContent = '✓ brands.json 반영 완료! (수정 ' + overrideCount + '건, 신규 ' + customCount + '건) 새로고침 중...';
+            status.textContent = '✓ brands.json 반영 완료! (수정 ' + overrideCount + '건, 신규 ' + customCount + '건) 1-2분 후 새로고침하시면 반영됩니다.';
             setTimeout(function() {
                 closeBackupModal();
-                window.location.reload();
-            }, 2000);
+            }, 3000);
         }).catch(function(e) {
             status.style.color = '#c0392b';
             status.textContent = '오류: ' + e.message;
@@ -3507,12 +3506,11 @@ async function confirmBackupStep2() {
     try {
         await backupToGitHub(token);
         status.style.color = '#27ae60';
-        status.textContent = '✓ brands.json 반영 완료! (수정 ' + overrideCount + '건, 신규 ' + customCount + '건) 새로고침 중...';
+        status.textContent = '✓ brands.json 반영 완료! (수정 ' + overrideCount + '건, 신규 ' + customCount + '건) 1-2분 후 새로고침하시면 반영됩니다.';
         btn.textContent = '완료';
         setTimeout(function() {
             closeBackupModal();
-            window.location.reload();
-        }, 2000);
+        }, 3000);
     } catch(e) {
         status.style.color = '#c0392b';
         status.textContent = '오류: ' + e.message;
@@ -3536,6 +3534,20 @@ async function backupToGitHub(pat) {
         return btoa(binStr);
     }
 
+    async function putFile(path, content, commitMsg) {
+        var getRes = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path, { headers: headers });
+        var sha = getRes.ok ? (await getRes.json()).sha : null;
+        var body = { message: commitMsg, content: toB64(content) };
+        if (sha) body.sha = sha;
+        var res = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path, {
+            method: 'PUT', headers: headers, body: JSON.stringify(body)
+        });
+        if (!res.ok) {
+            var err = await res.json().catch(function() { return {}; });
+            throw new Error(path + ' 쓰기 실패: ' + (err.message || res.status));
+        }
+    }
+
     // 1. Fetch current brands.json from GitHub
     var brandsPath = 'brands.json';
     var brandsGetRes = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + brandsPath, { headers: headers });
@@ -3546,7 +3558,7 @@ async function backupToGitHub(pat) {
     var brandsJsonStr = new TextDecoder().decode(Uint8Array.from(atob(rawB64), function(c) { return c.charCodeAt(0); }));
     var brandsJson = JSON.parse(brandsJsonStr);
 
-    // 2. Apply brandOverrides directly to brands.json data
+    // 2. Apply brandOverrides to brands.json
     Object.keys(brandOverrides).forEach(function(origName) {
         var ov = brandOverrides[origName];
         for (var cat in brandsJson) {
@@ -3586,8 +3598,7 @@ async function backupToGitHub(pat) {
     // 4. Write updated brands.json
     var newBrandsContent = JSON.stringify(brandsJson, null, 2);
     var putBrandsRes = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + brandsPath, {
-        method: 'PUT',
-        headers: headers,
+        method: 'PUT', headers: headers,
         body: JSON.stringify({
             message: '브랜드 편집 반영 (수정 ' + Object.keys(brandOverrides).length + '건, 신규 ' + customBrands.length + '건)',
             content: toB64(newBrandsContent),
@@ -3599,23 +3610,26 @@ async function backupToGitHub(pat) {
         throw new Error('brands.json 쓰기 실패: ' + (errData.message || putBrandsRes.status));
     }
 
-    // 5. Reset brands_backup.json to empty state
-    var emptyPayload = JSON.stringify({ savedAt: new Date().toISOString(), overrides: {}, customBrands: [] }, null, 2);
-    var backupPath = 'brands_backup.json';
-    var backupSha = null;
-    var backupGetRes = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + backupPath, { headers: headers });
-    if (backupGetRes.ok) { backupSha = (await backupGetRes.json()).sha; }
-    var clearBody = { message: '백업 완료 후 임시 파일 초기화', content: toB64(emptyPayload) };
-    if (backupSha) clearBody.sha = backupSha;
-    await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + backupPath, {
-        method: 'PUT', headers: headers, body: JSON.stringify(clearBody)
-    });
+    // 5. Update brands_backup.json: clear overrides, KEEP customBrands as safety net
+    //    until GitHub Pages deploys the updated brands.json (takes 1-2 min)
+    var backupPayload = JSON.stringify({
+        savedAt: new Date().toISOString(),
+        overrides: {},
+        customBrands: customBrands
+    }, null, 2);
+    await putFile('brands_backup.json', backupPayload, '백업 완료 - overrides 반영, customBrands 안전망 유지');
 
-    // 6. Clear local overrides and custom brands
+    // 6. Backup favorites to separate file
+    var favPayload = JSON.stringify({
+        savedAt: new Date().toISOString(),
+        favorites: favorites
+    }, null, 2);
+    await putFile('favorites_backup.json', favPayload, 'Favorites 백업');
+
+    // 7. Clear only overrides locally — keep customBrands as safety net
+    //    (they stay visible until brands.json is deployed)
     brandOverrides = {};
     saveBrandOverrides();
-    customBrands = [];
-    saveCustomBrands();
 }
 
 // Initialize search on page load
@@ -3635,14 +3649,25 @@ window.addEventListener('DOMContentLoaded', function() {
                     if (backup) {
                         var serverOverrides = backup.overrides || {};
                         var serverCustom = backup.customBrands || [];
-                        // Merge: server backup overrides local if key matches
-                        // (server backup = authoritative for original-name keys after migration)
                         Object.assign(brandOverrides, serverOverrides);
                         serverCustom.forEach(function(sb) {
                             var exists = customBrands.some(function(lb) { return lb.id === sb.id || lb.name === sb.name; });
                             if (!exists) customBrands.push(sb);
                         });
                     }
+                    // Load favorites backup
+                    return fetch('favorites_backup.json?_=' + Date.now())
+                        .then(function(r) { return r.ok ? r.json() : null; })
+                        .catch(function() { return null; })
+                        .then(function(favBackup) {
+                            if (favBackup && Array.isArray(favBackup.favorites)) {
+                                favBackup.favorites.forEach(function(f) {
+                                    if (!favorites.includes(f)) favorites.push(f);
+                                });
+                                saveFavorites();
+                            }
+                        });
+                }).then(function() {
                     // Migrate stale override keys (new-name → original-name)
                     migrateOverridesIfNeeded();
                     buildBrandIndex();
