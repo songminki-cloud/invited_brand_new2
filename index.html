@@ -2627,26 +2627,33 @@ function extractSearchTerm(desc) {
     return chunk.slice(0, 60) || desc.slice(0, 60);
 }
 
+// ── Extract only Latin (English) words from a potentially mixed query ────────
+function extractLatinWords(text) {
+    return text.toLowerCase()
+        .split(/[\s,().\-\/]+/)
+        .filter(function(w) { return w.length > 1 && /[a-z]/.test(w); });
+}
+
 // ── Check if AI-identified name actually matches the user's query ────────────
 function isRelevantMatch(shortQuery, officialName) {
     if (!officialName) return false;
-    var words = shortQuery.toLowerCase()
-        .split(/[\s,().\-\/]+/)
-        .filter(function(w) { return w.length > 1; });
-    if (words.length === 0) return true;
+    // Prefer Latin words for matching (results are usually in English)
+    var latinWords = extractLatinWords(shortQuery);
+    var allWords = shortQuery.toLowerCase().split(/[\s,().\-\/]+/).filter(function(w) { return w.length > 1; });
+    var checkWords = latinWords.length > 0 ? latinWords : allWords;
+    if (checkWords.length === 0) return true;
     var nameLower = officialName.toLowerCase();
-    // All words in the query must appear in the found name
-    return words.every(function(w) { return nameLower.includes(w); });
+    return checkWords.every(function(w) { return nameLower.includes(w); });
 }
 
 // ── Check if web search result actually relates to the query ─────────────────
 function isBraveResultRelevant(shortQuery, webResult) {
     if (!webResult) return false;
-    var words = shortQuery.toLowerCase()
-        .split(/[\s,().\-\/]+/)
-        .filter(function(w) { return w.length > 1; });
-    var haystack = ((webResult.title || '') + ' ' + (webResult.extract || '').slice(0, 300)).toLowerCase();
-    return words.every(function(w) { return haystack.includes(w); });
+    // Only check Latin words — Korean words won't appear in English results
+    var latinWords = extractLatinWords(shortQuery);
+    if (latinWords.length === 0) return true; // All-Korean query: accept any result
+    var haystack = ((webResult.title || '') + ' ' + (webResult.extract || '').slice(0, 400)).toLowerCase();
+    return latinWords.every(function(w) { return haystack.includes(w); });
 }
 
 // ── Stage 1: Identify brand from description ────────────────────────────────
@@ -2671,8 +2678,15 @@ async function identifyBrand(provider, apiKey, shortQuery, country) {
 async function searchBraveForBrand(shortQuery) {
     const braveKey = localStorage.getItem('mmall_brave_api_key');
     if (!braveKey) return null;
-    // Try two queries: exact name, then with "brand" appended
-    const queries = [shortQuery, shortQuery + ' brand fashion'];
+
+    // Build query variants: full → English-only → English + "brand"
+    var latinPart = extractLatinWords(shortQuery).join(' ');
+    var queries = [shortQuery];
+    if (latinPart && latinPart !== shortQuery.toLowerCase().trim()) {
+        queries.push(latinPart);                  // e.g. "ernie palo" from "어니팔로 ernie palo"
+    }
+    queries.push((latinPart || shortQuery) + ' brand');
+
     for (var qi = 0; qi < queries.length; qi++) {
         try {
             const res = await fetch(
@@ -2693,7 +2707,6 @@ async function searchBraveForBrand(shortQuery) {
                 return '[' + r.title + '] ' + (r.description || '');
             }).join('\n');
             const candidate = { title: results[0].title, extract: extract, source: 'Brave Search' };
-            // Only use if the result actually contains the brand name
             if (isBraveResultRelevant(shortQuery, candidate)) return candidate;
         } catch(e) { continue; }
     }
