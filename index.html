@@ -2618,17 +2618,48 @@ function extractBrandJSON(text) {
     return null;
 }
 
+// ── Extract short brand name from long description ──────────────────────────
+function extractSearchTerm(desc) {
+    // Take the first line, then the first comma/semicolon chunk, then cap at 60 chars
+    // e.g. "Ernie Palo, 어니파로, Japanese brand..." → "Ernie Palo"
+    var first = desc.split('\n')[0].trim();
+    var chunk = first.split(/[,;]/)[0].trim();
+    return chunk.slice(0, 60) || desc.slice(0, 60);
+}
+
+// ── Check if AI-identified name actually matches the user's query ────────────
+function isRelevantMatch(shortQuery, officialName) {
+    if (!officialName) return false;
+    var words = shortQuery.toLowerCase()
+        .split(/[\s,().\-\/]+/)
+        .filter(function(w) { return w.length > 1; });
+    if (words.length === 0) return true;
+    var nameLower = officialName.toLowerCase();
+    // All words in the query must appear in the found name
+    return words.every(function(w) { return nameLower.includes(w); });
+}
+
+// ── Check if web search result actually relates to the query ─────────────────
+function isBraveResultRelevant(shortQuery, webResult) {
+    if (!webResult) return false;
+    var words = shortQuery.toLowerCase()
+        .split(/[\s,().\-\/]+/)
+        .filter(function(w) { return w.length > 1; });
+    var haystack = ((webResult.title || '') + ' ' + (webResult.extract || '').slice(0, 300)).toLowerCase();
+    return words.every(function(w) { return haystack.includes(w); });
+}
+
 // ── Stage 1: Identify brand from description ────────────────────────────────
-async function identifyBrand(provider, apiKey, desc, country) {
+async function identifyBrand(provider, apiKey, shortQuery, country) {
     const prompt =
-        '당신은 브랜드 식별 전문가입니다. 아래 설명을 읽고 실제 존재하는 브랜드를 찾아주세요.\n\n' +
-        '사용자 설명: "' + desc + '"\n' +
+        '당신은 브랜드 식별 전문가입니다. 아래 브랜드명을 보고 실제 존재하는 브랜드인지 판단해주세요.\n\n' +
+        '브랜드명: "' + shortQuery + '"\n' +
         (country ? '국가 힌트: ' + country + '\n' : '') + '\n' +
         '중요 규칙 (반드시 준수):\n' +
-        '1. 당신의 학습 데이터에 이 브랜드에 대한 명확하고 구체적인 정보가 있는 경우에만 found: true.\n' +
-        '2. 브랜드가 실존하지 않거나 불확실하다면 반드시 found: false. confidence는 0-100.\n' +
-        '3. 정보를 추측하거나 지어내는 것은 절대 금지.\n' +
-        '4. officialName: 해당 브랜드의 공식 명칭 (한국어명 + 영문명 조합 허용).\n\n' +
+        '1. 이 정확한 브랜드명을 학습 데이터에서 명확히 알고 있어야만 found: true.\n' +
+        '2. 비슷한 이름의 다른 사람/브랜드로 대체하는 것은 절대 금지. 모르면 found: false.\n' +
+        '3. officialName은 반드시 입력 브랜드명과 동일하거나 그 공식 전체 명칭이어야 함.\n' +
+        '4. confidence: 0-100. 확실하지 않으면 60 미만으로.\n\n' +
         '순수 JSON으로만 응답:\n' +
         '{"found": false, "confidence": 0, "officialName": "", "country": ""}';
 
@@ -2636,87 +2667,69 @@ async function identifyBrand(provider, apiKey, desc, country) {
     return extractBrandJSON(content) || { found: false, confidence: 0 };
 }
 
-// ── Web search: Brave Search API (requires user key, most accurate) ──────────
-async function searchBraveForBrand(query) {
+// ── Web search: Brave Search API ─────────────────────────────────────────────
+async function searchBraveForBrand(shortQuery) {
     const braveKey = localStorage.getItem('mmall_brave_api_key');
     if (!braveKey) return null;
-    try {
-        const res = await fetch(
-            'https://api.search.brave.com/res/v1/web/search?q=' +
-            encodeURIComponent(query) + '&count=5&search_lang=ko',
-            {
-                headers: {
-                    'Accept': 'application/json',
-                    'Accept-Encoding': 'gzip',
-                    'X-Subscription-Token': braveKey
+    // Try two queries: exact name, then with "brand" appended
+    const queries = [shortQuery, shortQuery + ' brand fashion'];
+    for (var qi = 0; qi < queries.length; qi++) {
+        try {
+            const res = await fetch(
+                'https://api.search.brave.com/res/v1/web/search?q=' +
+                encodeURIComponent(queries[qi]) + '&count=5',
+                {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Subscription-Token': braveKey
+                    }
                 }
-            }
-        );
-        if (!res.ok) return null;
-        const data = await res.json();
-        const results = data.web && data.web.results;
-        if (!results || results.length === 0) return null;
-        const extract = results.slice(0, 4).map(function(r) {
-            return '[' + r.title + '] ' + (r.description || '');
-        }).join('\n');
-        return { title: results[0].title, extract: extract, source: 'Brave Search' };
-    } catch(e) { return null; }
+            );
+            if (!res.ok) continue;
+            const data = await res.json();
+            const results = data.web && data.web.results;
+            if (!results || results.length === 0) continue;
+            const extract = results.slice(0, 4).map(function(r) {
+                return '[' + r.title + '] ' + (r.description || '');
+            }).join('\n');
+            const candidate = { title: results[0].title, extract: extract, source: 'Brave Search' };
+            // Only use if the result actually contains the brand name
+            if (isBraveResultRelevant(shortQuery, candidate)) return candidate;
+        } catch(e) { continue; }
+    }
+    return null;
 }
 
-// ── Web search fallback: Wikipedia (free, CORS supported) ───────────────────
-async function searchWebForBrand(query) {
-    // 1. Try Brave Search first (most comprehensive, covers small brands)
-    const braveResult = await searchBraveForBrand(query);
-    if (braveResult) return braveResult;
-
-    // 2. Fallback: English Wikipedia
-    try {
-        const searchRes = await fetch(
-            'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
-            encodeURIComponent(query) + '&format=json&origin=*&srlimit=2'
-        );
-        if (searchRes.ok) {
+// ── Web search fallback: Wikipedia ───────────────────────────────────────────
+async function searchWikipediaForBrand(shortQuery) {
+    const langs = ['en', 'ko'];
+    for (var li = 0; li < langs.length; li++) {
+        var lang = langs[li];
+        try {
+            const searchRes = await fetch(
+                'https://' + lang + '.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
+                encodeURIComponent(shortQuery) + '&format=json&origin=*&srlimit=2'
+            );
+            if (!searchRes.ok) continue;
             const searchData = await searchRes.json();
             const hits = searchData.query && searchData.query.search;
-            if (hits && hits.length > 0) {
-                const title = hits[0].title;
-                const summaryRes = await fetch(
-                    'https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title)
-                );
-                if (summaryRes.ok) {
-                    const s = await summaryRes.json();
-                    if (s.extract && s.extract.length > 50) {
-                        return { title: s.title, extract: s.extract.slice(0, 1000), source: 'Wikipedia' };
-                    }
-                }
+            if (!hits || hits.length === 0) continue;
+            const title = hits[0].title;
+            const summaryRes = await fetch(
+                'https://' + lang + '.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title)
+            );
+            if (!summaryRes.ok) continue;
+            const s = await summaryRes.json();
+            if (s.extract && s.extract.length > 50) {
+                var candidate = {
+                    title: s.title,
+                    extract: s.extract.slice(0, 1000),
+                    source: lang === 'ko' ? '한국어 Wikipedia' : 'Wikipedia'
+                };
+                if (isBraveResultRelevant(shortQuery, candidate)) return candidate;
             }
-        }
-    } catch(e) {}
-
-    // 3. Fallback: Korean Wikipedia
-    try {
-        const krRes = await fetch(
-            'https://ko.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
-            encodeURIComponent(query) + '&format=json&origin=*&srlimit=2'
-        );
-        if (krRes.ok) {
-            const krData = await krRes.json();
-            const hits = krData.query && krData.query.search;
-            if (hits && hits.length > 0) {
-                const title = hits[0].title;
-                const summaryRes = await fetch(
-                    'https://ko.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title)
-                );
-                if (summaryRes.ok) {
-                    const s = await summaryRes.json();
-                    if (s.extract && s.extract.length > 50) {
-                        return { title: s.title, extract: s.extract.slice(0, 1000), source: '한국어 Wikipedia' };
-                    }
-                }
-            }
-        }
-    } catch(e) {}
-
+        } catch(e) { continue; }
+    }
     return null;
 }
 
@@ -2768,6 +2781,7 @@ async function findAndCreateBrand() {
 
     const country = document.getElementById('brandCountryInput').value.trim();
     const generateBtn = document.getElementById('generateBtn');
+    const shortQuery = extractSearchTerm(desc);  // Always use short term for searches
 
     generateBtn.disabled = true;
     generateBtn.textContent = '찾는 중...';
@@ -2777,39 +2791,53 @@ async function findAndCreateBrand() {
     document.getElementById('generatedEditFields').style.display = 'none';
 
     try {
-        // Stage 1: AI identification
-        const identified = await identifyBrand(provider, apiKey, desc, country);
+        // Step 1: Brave Search first (most reliable for small/niche brands)
+        if (localStorage.getItem('mmall_brave_api_key')) {
+            generateBtn.textContent = 'Brave 검색 중...';
+            const braveResult = await searchBraveForBrand(shortQuery);
+            if (braveResult) {
+                generateBtn.textContent = '카드 생성 중...';
+                const brandData = await generateBrandCard(provider, apiKey, shortQuery, country, braveResult);
+                if (brandData && (brandData.name || brandData.description)) {
+                    document.getElementById('brandNameInput').value = brandData.name || shortQuery;
+                    document.getElementById('brandNameSection').style.display = 'block';
+                    showGeneratedPreview(brandData);
+                    return;
+                }
+            }
+        }
 
-        if (identified.found && identified.confidence >= 65) {
-            // Known brand → generate card
-            document.getElementById('brandNameInput').value = identified.officialName || desc;
+        // Step 2: AI identification (temperature=0, with relevance check)
+        generateBtn.textContent = 'AI 식별 중...';
+        const identified = await identifyBrand(provider, apiKey, shortQuery, country);
+        if (identified.found && identified.confidence >= 70 && isRelevantMatch(shortQuery, identified.officialName)) {
+            document.getElementById('brandNameInput').value = identified.officialName || shortQuery;
             document.getElementById('brandNameSection').style.display = 'block';
             if (identified.country && !country) {
                 document.getElementById('brandCountryInput').value = identified.country;
             }
             generateBtn.textContent = '카드 생성 중...';
             const brandData = await generateBrandCard(provider, apiKey, identified.officialName, identified.country || country, null);
-            if (!brandData) throw new Error('카드 생성에 실패했습니다. 다시 시도해주세요.');
-            showGeneratedPreview(brandData);
-        } else {
-            // Not found by AI → try web search (Brave → Wikipedia)
-            generateBtn.textContent = localStorage.getItem('mmall_brave_api_key') ? 'Brave 검색 중...' : '웹 검색 중...';
-            const webResult = await searchWebForBrand(desc);
+            if (brandData) { showGeneratedPreview(brandData); return; }
+        }
 
-            if (webResult) {
-                generateBtn.textContent = '정보 분석 중...';
-                const brandData = await generateBrandCard(provider, apiKey, webResult.title, country, webResult);
-                if (brandData && (brandData.name || brandData.description)) {
-                    document.getElementById('brandNameInput').value = brandData.name || webResult.title;
-                    document.getElementById('brandNameSection').style.display = 'block';
-                    showGeneratedPreview(brandData);
-                } else {
-                    showBrandNotFound();
-                }
-            } else {
-                showBrandNotFound();
+        // Step 3: Wikipedia fallback
+        generateBtn.textContent = '웹 검색 중...';
+        const wikiResult = await searchWikipediaForBrand(shortQuery);
+        if (wikiResult) {
+            generateBtn.textContent = '카드 생성 중...';
+            const brandData = await generateBrandCard(provider, apiKey, shortQuery, country, wikiResult);
+            if (brandData && (brandData.name || brandData.description)) {
+                document.getElementById('brandNameInput').value = brandData.name || shortQuery;
+                document.getElementById('brandNameSection').style.display = 'block';
+                showGeneratedPreview(brandData);
+                return;
             }
         }
+
+        // Step 4: Not found
+        showBrandNotFound();
+
     } catch (err) {
         showToast('오류: ' + err.message, 4000);
         generateBtn.disabled = false;
