@@ -1839,23 +1839,42 @@ footer {
     <div class="modal-box">
         <button class="modal-close" onclick="closeCreateModal()">✕</button>
         <h2 class="modal-title">New Brand Archive</h2>
-        <p class="modal-subtitle">브랜드명을 입력하면 AI가 카드를 생성합니다</p>
+        <p class="modal-subtitle">찾고 싶은 브랜드에 대해 설명해주세요</p>
 
-        <div class="form-group">
-            <label class="form-label">Brand Name *</label>
-            <input type="text" class="form-input" id="brandNameInput"
-                   placeholder="예: 메종 마르지엘라 (Maison Margiela)"
-                   onkeydown="if(event.key==='Enter')generateBrandCard()">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Country <span style="opacity:0.6;">(선택 · 미입력 시 AI 추정)</span></label>
-            <input type="text" class="form-input" id="brandCountryInput"
-                   placeholder="예: France, Japan, Korea, USA ...">
+        <!-- Step 1: Description query -->
+        <div id="brandSearchSection">
+            <div class="form-group">
+                <label class="form-label">브랜드 설명</label>
+                <textarea class="form-input form-textarea" id="brandDescInput" rows="3"
+                    placeholder="예: 발롱드파리, ballon de paris, 프랑스 하이엔드 스피커 브랜드&#10;예: 일본 셀렉트샵, 도쿄 베이스, 미니멀 패션 큐레이션"
+                    style="resize:vertical;"
+                    onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey))searchBrand()"></textarea>
+                <p style="font-size:0.75rem;color:var(--bronze);margin-top:4px;opacity:0.7;">브랜드명·영문명·특징을 함께 적으면 더 정확하게 찾습니다.</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Country <span style="opacity:0.6;">(선택)</span></label>
+                <input type="text" class="form-input" id="brandCountryInput"
+                       placeholder="예: France, Japan, Korea, USA ...">
+            </div>
+            <button class="generate-btn" id="generateBtn" onclick="searchBrand()">브랜드 찾기</button>
         </div>
 
-        <button class="generate-btn" id="generateBtn" onclick="generateBrandCard()">
-            AI 카드 생성
-        </button>
+        <!-- Not found section -->
+        <div id="brandNotFoundSection" style="display:none; text-align:center; padding:16px 0; border-top:1px solid rgba(255,255,255,0.08); margin-top:16px;">
+            <p style="color:var(--bronze);font-size:0.9rem;margin-bottom:4px;line-height:1.6;">
+                브랜드를 찾지 못했습니다.<br>
+                <span style="font-size:0.78rem;opacity:0.7;">직접 정보를 입력하시겠습니까?</span>
+            </p>
+            <button class="save-btn" onclick="showManualEntry()" style="max-width:160px;margin-top:10px;">직접 입력</button>
+        </div>
+
+        <!-- Confirmed brand name (shown after found or manual) -->
+        <div id="brandNameSection" style="display:none; margin-top:16px; border-top:1px solid rgba(255,255,255,0.08); padding-top:16px;">
+            <div class="form-group">
+                <label class="form-label">Brand Name *</label>
+                <input type="text" class="form-input" id="brandNameInput" placeholder="공식 브랜드명">
+            </div>
+        </div>
 
         <!-- Editable fields shown after AI generation (or for manual entry) -->
         <div id="generatedEditFields" style="display:none; margin-top:18px;">
@@ -2292,7 +2311,8 @@ const API_PROVIDERS = {
         hintLinkText: 'console.anthropic.com',
         hintLinkUrl: 'https://console.anthropic.com/',
         storageKey: 'mmall_api_key_anthropic',
-        call: async function(apiKey, prompt) {
+        call: async function(apiKey, prompt, opts) {
+            opts = opts || {};
             const res = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
                 headers: {
@@ -2303,7 +2323,8 @@ const API_PROVIDERS = {
                 },
                 body: JSON.stringify({
                     model: 'claude-haiku-4-5-20251001',
-                    max_tokens: 1024,
+                    max_tokens: opts.maxTokens || 1024,
+                    temperature: opts.temperature !== undefined ? opts.temperature : 0.7,
                     messages: [{ role: 'user', content: prompt }]
                 })
             });
@@ -2322,7 +2343,8 @@ const API_PROVIDERS = {
         hintLinkText: 'aistudio.google.com',
         hintLinkUrl: 'https://aistudio.google.com/app/apikey',
         storageKey: 'mmall_api_key_google',
-        call: async function(apiKey, prompt) {
+        call: async function(apiKey, prompt, opts) {
+            opts = opts || {};
             const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey;
             const res = await fetch(url, {
                 method: 'POST',
@@ -2330,7 +2352,8 @@ const API_PROVIDERS = {
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: prompt }] }],
                     generationConfig: {
-                        maxOutputTokens: 2048,
+                        maxOutputTokens: opts.maxTokens || 2048,
+                        temperature: opts.temperature !== undefined ? opts.temperature : 0.7,
                         responseMimeType: 'application/json'
                     }
                 })
@@ -2352,7 +2375,8 @@ const API_PROVIDERS = {
         hintLinkText: 'platform.openai.com',
         hintLinkUrl: 'https://platform.openai.com/api-keys',
         storageKey: 'mmall_api_key_openai',
-        call: async function(apiKey, prompt) {
+        call: async function(apiKey, prompt, opts) {
+            opts = opts || {};
             const res = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
@@ -2361,7 +2385,8 @@ const API_PROVIDERS = {
                 },
                 body: JSON.stringify({
                     model: 'gpt-4o-mini',
-                    max_tokens: 1024,
+                    max_tokens: opts.maxTokens || 1024,
+                    temperature: opts.temperature !== undefined ? opts.temperature : 0.7,
                     messages: [{ role: 'user', content: prompt }]
                 })
             });
@@ -2490,13 +2515,16 @@ function getCategoryDisplayName(cat) {
 // Modal controls
 function openCreateModal() {
     document.getElementById('createBrandModal').classList.add('active');
-    setTimeout(() => document.getElementById('brandNameInput').focus(), 120);
+    setTimeout(() => document.getElementById('brandDescInput').focus(), 120);
 }
 
 function closeCreateModal() {
     document.getElementById('createBrandModal').classList.remove('active');
+    document.getElementById('brandDescInput').value = '';
     document.getElementById('brandNameInput').value = '';
     document.getElementById('brandCountryInput').value = '';
+    document.getElementById('brandNotFoundSection').style.display = 'none';
+    document.getElementById('brandNameSection').style.display = 'none';
     document.getElementById('generatedEditFields').style.display = 'none';
     document.getElementById('pendingHeadline').value = '';
     document.getElementById('pendingDefinition').value = '';
@@ -2506,7 +2534,7 @@ function closeCreateModal() {
     document.getElementById('saveBtn').style.display = 'none';
     const btn = document.getElementById('generateBtn');
     btn.disabled = false;
-    btn.textContent = 'AI 카드 생성';
+    btn.textContent = '브랜드 찾기';
     pendingBrandData = null;
 }
 
@@ -2534,9 +2562,9 @@ function saveApiKeyAndClose() {
     localStorage.setItem('mmall_api_provider', selectedProvider);
     localStorage.setItem(API_PROVIDERS[selectedProvider].storageKey, key);
     closeApiKeyModal();
-    const brandName = document.getElementById('brandNameInput').value.trim();
-    if (document.getElementById('createBrandModal').classList.contains('active') && brandName) {
-        generateBrandCard();
+    const desc = document.getElementById('brandDescInput') && document.getElementById('brandDescInput').value.trim();
+    if (document.getElementById('createBrandModal').classList.contains('active') && desc) {
+        searchBrand();
     }
 }
 
@@ -2563,9 +2591,118 @@ function extractBrandJSON(text) {
     return null;
 }
 
-async function generateBrandCard() {
-    const brandName = document.getElementById('brandNameInput').value.trim();
-    if (!brandName) { alert('브랜드명을 입력해주세요.'); return; }
+// ── Stage 1: Identify brand from description ────────────────────────────────
+async function identifyBrand(provider, apiKey, desc, country) {
+    const prompt =
+        '당신은 브랜드 식별 전문가입니다. 아래 설명을 읽고 실제 존재하는 브랜드를 찾아주세요.\n\n' +
+        '사용자 설명: "' + desc + '"\n' +
+        (country ? '국가 힌트: ' + country + '\n' : '') + '\n' +
+        '중요 규칙 (반드시 준수):\n' +
+        '1. 당신의 학습 데이터에 이 브랜드에 대한 명확하고 구체적인 정보가 있는 경우에만 found: true.\n' +
+        '2. 브랜드가 실존하지 않거나 불확실하다면 반드시 found: false. confidence는 0-100.\n' +
+        '3. 정보를 추측하거나 지어내는 것은 절대 금지.\n' +
+        '4. officialName: 해당 브랜드의 공식 명칭 (한국어명 + 영문명 조합 허용).\n\n' +
+        '순수 JSON으로만 응답:\n' +
+        '{"found": false, "confidence": 0, "officialName": "", "country": ""}';
+
+    const content = await provider.call(apiKey, prompt, { temperature: 0, maxTokens: 256 });
+    return extractBrandJSON(content) || { found: false, confidence: 0 };
+}
+
+// ── Web search fallback: Wikipedia (free, CORS supported) ───────────────────
+async function searchWebForBrand(query) {
+    try {
+        // Try English Wikipedia first
+        const searchRes = await fetch(
+            'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
+            encodeURIComponent(query) + '&format=json&origin=*&srlimit=2'
+        );
+        if (searchRes.ok) {
+            const searchData = await searchRes.json();
+            const hits = searchData.query && searchData.query.search;
+            if (hits && hits.length > 0) {
+                const title = hits[0].title;
+                const summaryRes = await fetch(
+                    'https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title)
+                );
+                if (summaryRes.ok) {
+                    const s = await summaryRes.json();
+                    if (s.extract && s.extract.length > 50) {
+                        return { title: s.title, extract: s.extract.slice(0, 1000), source: 'Wikipedia' };
+                    }
+                }
+            }
+        }
+    } catch(e) {}
+
+    try {
+        // Try Korean Wikipedia
+        const krRes = await fetch(
+            'https://ko.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
+            encodeURIComponent(query) + '&format=json&origin=*&srlimit=2'
+        );
+        if (krRes.ok) {
+            const krData = await krRes.json();
+            const hits = krData.query && krData.query.search;
+            if (hits && hits.length > 0) {
+                const title = hits[0].title;
+                const summaryRes = await fetch(
+                    'https://ko.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title)
+                );
+                if (summaryRes.ok) {
+                    const s = await summaryRes.json();
+                    if (s.extract && s.extract.length > 50) {
+                        return { title: s.title, extract: s.extract.slice(0, 1000), source: '한국어 Wikipedia' };
+                    }
+                }
+            }
+        }
+    } catch(e) {}
+
+    return null;
+}
+
+// ── Stage 2: Generate card from confirmed brand name (+ optional web context) ─
+async function generateBrandCard(provider, apiKey, brandName, country, webContext) {
+    const contextBlock = webContext
+        ? '아래는 웹 검색 결과입니다. 이 정보만 참고하고, 여기 없는 내용은 절대 추가하지 마세요:\n' +
+          '[' + webContext.source + '] ' + webContext.title + '\n' + webContext.extract + '\n\n'
+        : '';
+
+    const prompt =
+        '당신은 패션/라이프스타일 브랜드 아카이버입니다.\n\n' +
+        '브랜드명: ' + brandName + '\n' +
+        (country ? '국가: ' + country + '\n' : '') + '\n' +
+        contextBlock +
+        '━━ 할루시네이션 방지 규칙 ━━\n' +
+        '1. 확실히 아는 정보만 작성. 모르면 빈 문자열("").\n' +
+        '2. homepage: 공식 URL이 100% 확실한 경우만. 추측 금지. 불확실하면 "".\n' +
+        '3. description: 검증된 사실만. 연도·창립자·협업·수상 이력은 확실한 경우만.\n' +
+        '4. name: 실제 공식 명칭 그대로. 임의로 변형하지 마세요.\n' +
+        '5. 이 브랜드를 충분히 모른다면 needsVerification: true.\n\n' +
+        '순수 JSON으로만 응답:\n' +
+        '{\n' +
+        '  "needsVerification": false,\n' +
+        '  "verificationReason": "",\n' +
+        '  "name": "한국어명 (영문명) 또는 영문명만. 예: 메종 마르지엘라 (Maison Margiela)",\n' +
+        '  "country": "발원 국가 영어 표기. 불확실하면 빈 문자열",\n' +
+        '  "headline": "영문 태그라인 3-5단어. 브랜드 본질을 함축",\n' +
+        '  "definition": "한국어 한 줄 정의 15-25자",\n' +
+        '  "description": "한국어 설명 150-250자. 확인된 사실만",\n' +
+        '  "homepage": "공식 URL. 불확실하면 빈 문자열",\n' +
+        '  "category": "philosophy | visual | scarcity | narrative | inspiration | select_shop"\n' +
+        '}\n\n' +
+        'philosophy=철학·장인정신, visual=비주얼·디자인, scarcity=희소성·드롭, ' +
+        'narrative=스토리텔링·팬덤, inspiration=공간·라이프스타일, select_shop=편집숍';
+
+    const content = await provider.call(apiKey, prompt, { temperature: 0.3 });
+    return extractBrandJSON(content);
+}
+
+// ── Main search flow ────────────────────────────────────────────────────────
+async function searchBrand() {
+    const desc = document.getElementById('brandDescInput').value.trim();
+    if (!desc) { showToast('브랜드에 대해 설명해주세요.', 3000); return; }
 
     const provider = API_PROVIDERS[selectedProvider];
     const apiKey = localStorage.getItem(provider.storageKey) || '';
@@ -2575,55 +2712,73 @@ async function generateBrandCard() {
     const generateBtn = document.getElementById('generateBtn');
 
     generateBtn.disabled = true;
-    generateBtn.textContent = '생성 중...';
+    generateBtn.textContent = '찾는 중...';
+    document.getElementById('brandNotFoundSection').style.display = 'none';
+    document.getElementById('brandNameSection').style.display = 'none';
     document.getElementById('saveBtn').style.display = 'none';
     document.getElementById('generatedEditFields').style.display = 'none';
 
-    const prompt =
-        '당신은 패션/라이프스타일 브랜드 아카이버입니다. 아래 브랜드에 대해 실제로 알고 있는 정보만을 사용해 카드를 작성하세요.\n\n' +
-        '브랜드명: ' + brandName + '\n' +
-        (country ? '국가: ' + country : '') + '\n\n' +
-
-        '━━ 할루시네이션 방지 규칙 (반드시 준수) ━━\n' +
-        '1. 확실히 아는 정보만 작성. 모르면 빈 문자열("")로 두세요.\n' +
-        '2. homepage: 공식 웹사이트 URL이 100% 확실한 경우만 입력. 추측하거나 조합하지 마세요. 불확실하면 반드시 "" (빈 문자열).\n' +
-        '3. description: 검증된 사실만 서술. 확인되지 않은 연도·협업·창립자명·수상 이력은 포함하지 마세요. 불확실한 내용은 "알려진 바에 따르면" 등으로 유보 표현 사용.\n' +
-        '4. name: 실제로 널리 쓰이는 공식 명칭 그대로. 임의로 한국어화하거나 변형하지 마세요.\n' +
-        '5. country: 공식적으로 알려진 발원국. 불확실하면 "".\n' +
-        '6. 브랜드를 잘 모르거나 정보가 부족하다면 needsVerification: true, 이유를 verificationReason에 한국어로 기술.\n\n' +
-
-        '아래 JSON 형식으로만 응답 (마크다운 없이, 순수 JSON 객체만):\n' +
-        '{\n' +
-        '  "needsVerification": false,\n' +
-        '  "verificationReason": "",\n' +
-        '  "name": "한국어명 (영문명) 형식. 예: 메종 마르지엘라 (Maison Margiela). 한국 브랜드면 한국어명만. 영미권이면 영문명만",\n' +
-        '  "country": "발원 국가 (영어, 예: France / Japan / Korea / USA). 불확실하면 빈 문자열",\n' +
-        '  "headline": "영문 태그라인 (3-5단어, 브랜드 본질을 함축하는 시적 표현)",\n' +
-        '  "definition": "한국어 한 줄 정의 (15-25자, 브랜드 핵심 정체성)",\n' +
-        '  "description": "한국어 설명 (150-250자). 확인된 사실만. 불확실한 세부정보는 생략",\n' +
-        '  "homepage": "공식 URL (100% 확실한 경우만). 불확실하면 빈 문자열",\n' +
-        '  "category": "philosophy 또는 visual 또는 scarcity 또는 narrative 또는 inspiration 또는 select_shop"\n' +
-        '}\n\n' +
-        '카테고리 정의:\n' +
-        '- philosophy: 철학·신념·지속가능성·장인정신이 핵심\n' +
-        '- visual: 압도적 비주얼·그래픽·디자인이 핵심\n' +
-        '- scarcity: 희소성·한정판·드롭 컬처가 핵심\n' +
-        '- narrative: 스토리텔링·창립자 서사·팬덤이 핵심\n' +
-        '- inspiration: 공간·경험·라이프스타일 제안이 핵심\n' +
-        '- select_shop: 큐레이션 편집숍';
-
     try {
-        const content = await provider.call(apiKey, prompt);
-        const brandData = extractBrandJSON(content);
-        if (!brandData || !brandData.name || !brandData.description) throw new Error('생성된 데이터가 불완전합니다. 다시 시도해주세요.');
+        // Stage 1: AI identification
+        const identified = await identifyBrand(provider, apiKey, desc, country);
 
-        showGeneratedPreview(brandData);
+        if (identified.found && identified.confidence >= 65) {
+            // Known brand → generate card
+            document.getElementById('brandNameInput').value = identified.officialName || desc;
+            document.getElementById('brandNameSection').style.display = 'block';
+            if (identified.country && !country) {
+                document.getElementById('brandCountryInput').value = identified.country;
+            }
+            generateBtn.textContent = '카드 생성 중...';
+            const brandData = await generateBrandCard(provider, apiKey, identified.officialName, identified.country || country, null);
+            if (!brandData) throw new Error('카드 생성에 실패했습니다. 다시 시도해주세요.');
+            showGeneratedPreview(brandData);
+        } else {
+            // Not found by AI → try web search
+            generateBtn.textContent = '웹 검색 중...';
+            const webResult = await searchWebForBrand(desc);
 
+            if (webResult) {
+                generateBtn.textContent = '정보 분석 중...';
+                const brandData = await generateBrandCard(provider, apiKey, webResult.title, country, webResult);
+                if (brandData && (brandData.name || brandData.description)) {
+                    document.getElementById('brandNameInput').value = brandData.name || webResult.title;
+                    document.getElementById('brandNameSection').style.display = 'block';
+                    showGeneratedPreview(brandData);
+                } else {
+                    showBrandNotFound();
+                }
+            } else {
+                showBrandNotFound();
+            }
+        }
     } catch (err) {
-        showToast('생성 오류: ' + err.message, 4000);
+        showToast('오류: ' + err.message, 4000);
         generateBtn.disabled = false;
-        generateBtn.textContent = 'AI 카드 생성';
+        generateBtn.textContent = '다시 찾기';
     }
+}
+
+function showBrandNotFound() {
+    document.getElementById('brandNotFoundSection').style.display = 'block';
+    const generateBtn = document.getElementById('generateBtn');
+    generateBtn.disabled = false;
+    generateBtn.textContent = '다시 찾기';
+}
+
+function showManualEntry() {
+    document.getElementById('brandNotFoundSection').style.display = 'none';
+    document.getElementById('brandNameSection').style.display = 'block';
+    document.getElementById('brandNameInput').value = '';
+    setTimeout(function() { document.getElementById('brandNameInput').focus(); }, 100);
+    document.getElementById('pendingHeadline').value = '';
+    document.getElementById('pendingDefinition').value = '';
+    document.getElementById('pendingDescription').value = '';
+    document.getElementById('pendingHomepage').value = '';
+    document.getElementById('verificationWarning').style.display = 'none';
+    document.getElementById('generatedEditFields').style.display = 'block';
+    document.getElementById('saveBtn').style.display = 'block';
+    pendingBrandData = null;
 }
 
 function showGeneratedPreview(brandData) {
@@ -2646,7 +2801,7 @@ function showGeneratedPreview(brandData) {
     }
 
     document.getElementById('generatedEditFields').style.display = 'block';
-    document.getElementById('generateBtn').textContent = '다시 생성';
+    document.getElementById('generateBtn').textContent = '다시 찾기';
     document.getElementById('generateBtn').disabled = false;
     document.getElementById('saveBtn').style.display = 'block';
 }
@@ -3467,11 +3622,10 @@ function confirmBackupStep1() {
         }
         backupToGitHub(savedToken).then(function() {
             status.style.color = '#27ae60';
-            status.textContent = '✓ brands.json 반영 완료! (수정 ' + overrideCount + '건, 신규 ' + customCount + '건) 새로고침 중...';
+            status.textContent = '✓ brands.json 반영 완료! (수정 ' + overrideCount + '건, 신규 ' + customCount + '건) 1-2분 후 새로고침하시면 반영됩니다.';
             setTimeout(function() {
                 closeBackupModal();
-                window.location.reload();
-            }, 2000);
+            }, 3000);
         }).catch(function(e) {
             status.style.color = '#c0392b';
             status.textContent = '오류: ' + e.message;
@@ -3510,12 +3664,11 @@ async function confirmBackupStep2() {
     try {
         await backupToGitHub(token);
         status.style.color = '#27ae60';
-        status.textContent = '✓ brands.json 반영 완료! (수정 ' + overrideCount + '건, 신규 ' + customCount + '건) 새로고침 중...';
+        status.textContent = '✓ brands.json 반영 완료! (수정 ' + overrideCount + '건, 신규 ' + customCount + '건) 1-2분 후 새로고침하시면 반영됩니다.';
         btn.textContent = '완료';
         setTimeout(function() {
             closeBackupModal();
-            window.location.reload();
-        }, 2000);
+        }, 3000);
     } catch(e) {
         status.style.color = '#c0392b';
         status.textContent = '오류: ' + e.message;
@@ -3539,6 +3692,20 @@ async function backupToGitHub(pat) {
         return btoa(binStr);
     }
 
+    async function putFile(path, content, commitMsg) {
+        var getRes = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path, { headers: headers });
+        var sha = getRes.ok ? (await getRes.json()).sha : null;
+        var body = { message: commitMsg, content: toB64(content) };
+        if (sha) body.sha = sha;
+        var res = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path, {
+            method: 'PUT', headers: headers, body: JSON.stringify(body)
+        });
+        if (!res.ok) {
+            var err = await res.json().catch(function() { return {}; });
+            throw new Error(path + ' 쓰기 실패: ' + (err.message || res.status));
+        }
+    }
+
     // 1. Fetch current brands.json from GitHub
     var brandsPath = 'brands.json';
     var brandsGetRes = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + brandsPath, { headers: headers });
@@ -3549,7 +3716,7 @@ async function backupToGitHub(pat) {
     var brandsJsonStr = new TextDecoder().decode(Uint8Array.from(atob(rawB64), function(c) { return c.charCodeAt(0); }));
     var brandsJson = JSON.parse(brandsJsonStr);
 
-    // 2. Apply brandOverrides directly to brands.json data
+    // 2. Apply brandOverrides to brands.json
     Object.keys(brandOverrides).forEach(function(origName) {
         var ov = brandOverrides[origName];
         for (var cat in brandsJson) {
@@ -3589,8 +3756,7 @@ async function backupToGitHub(pat) {
     // 4. Write updated brands.json
     var newBrandsContent = JSON.stringify(brandsJson, null, 2);
     var putBrandsRes = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + brandsPath, {
-        method: 'PUT',
-        headers: headers,
+        method: 'PUT', headers: headers,
         body: JSON.stringify({
             message: '브랜드 편집 반영 (수정 ' + Object.keys(brandOverrides).length + '건, 신규 ' + customBrands.length + '건)',
             content: toB64(newBrandsContent),
@@ -3602,23 +3768,26 @@ async function backupToGitHub(pat) {
         throw new Error('brands.json 쓰기 실패: ' + (errData.message || putBrandsRes.status));
     }
 
-    // 5. Reset brands_backup.json to empty state
-    var emptyPayload = JSON.stringify({ savedAt: new Date().toISOString(), overrides: {}, customBrands: [] }, null, 2);
-    var backupPath = 'brands_backup.json';
-    var backupSha = null;
-    var backupGetRes = await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + backupPath, { headers: headers });
-    if (backupGetRes.ok) { backupSha = (await backupGetRes.json()).sha; }
-    var clearBody = { message: '백업 완료 후 임시 파일 초기화', content: toB64(emptyPayload) };
-    if (backupSha) clearBody.sha = backupSha;
-    await fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + backupPath, {
-        method: 'PUT', headers: headers, body: JSON.stringify(clearBody)
-    });
+    // 5. Update brands_backup.json: clear overrides, KEEP customBrands as safety net
+    //    until GitHub Pages deploys the updated brands.json (takes 1-2 min)
+    var backupPayload = JSON.stringify({
+        savedAt: new Date().toISOString(),
+        overrides: {},
+        customBrands: customBrands
+    }, null, 2);
+    await putFile('brands_backup.json', backupPayload, '백업 완료 - overrides 반영, customBrands 안전망 유지');
 
-    // 6. Clear local overrides and custom brands
+    // 6. Backup favorites to separate file
+    var favPayload = JSON.stringify({
+        savedAt: new Date().toISOString(),
+        favorites: favorites
+    }, null, 2);
+    await putFile('favorites_backup.json', favPayload, 'Favorites 백업');
+
+    // 7. Clear only overrides locally — keep customBrands as safety net
+    //    (they stay visible until brands.json is deployed)
     brandOverrides = {};
     saveBrandOverrides();
-    customBrands = [];
-    saveCustomBrands();
 }
 
 // Initialize search on page load
@@ -3638,14 +3807,25 @@ window.addEventListener('DOMContentLoaded', function() {
                     if (backup) {
                         var serverOverrides = backup.overrides || {};
                         var serverCustom = backup.customBrands || [];
-                        // Merge: server backup overrides local if key matches
-                        // (server backup = authoritative for original-name keys after migration)
                         Object.assign(brandOverrides, serverOverrides);
                         serverCustom.forEach(function(sb) {
                             var exists = customBrands.some(function(lb) { return lb.id === sb.id || lb.name === sb.name; });
                             if (!exists) customBrands.push(sb);
                         });
                     }
+                    // Load favorites backup
+                    return fetch('favorites_backup.json?_=' + Date.now())
+                        .then(function(r) { return r.ok ? r.json() : null; })
+                        .catch(function() { return null; })
+                        .then(function(favBackup) {
+                            if (favBackup && Array.isArray(favBackup.favorites)) {
+                                favBackup.favorites.forEach(function(f) {
+                                    if (!favorites.includes(f)) favorites.push(f);
+                                });
+                                saveFavorites();
+                            }
+                        });
+                }).then(function() {
                     // Migrate stale override keys (new-name → original-name)
                     migrateOverridesIfNeeded();
                     buildBrandIndex();
