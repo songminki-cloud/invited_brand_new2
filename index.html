@@ -1860,12 +1860,18 @@ footer {
         </div>
 
         <!-- Not found section -->
-        <div id="brandNotFoundSection" style="display:none; text-align:center; padding:16px 0; border-top:1px solid rgba(255,255,255,0.08); margin-top:16px;">
-            <p style="color:var(--bronze);font-size:0.9rem;margin-bottom:4px;line-height:1.6;">
-                브랜드를 찾지 못했습니다.<br>
-                <span style="font-size:0.78rem;opacity:0.7;">직접 정보를 입력하시겠습니까?</span>
+        <div id="brandNotFoundSection" style="display:none; padding:16px 0; border-top:1px solid rgba(255,255,255,0.08); margin-top:16px;">
+            <p style="color:var(--bronze);font-size:0.9rem;margin-bottom:8px;line-height:1.7;text-align:center;">
+                브랜드를 찾지 못했습니다.
             </p>
-            <button class="save-btn" onclick="showManualEntry()" style="max-width:160px;margin-top:10px;">직접 입력</button>
+            <div style="background:rgba(184,149,106,0.07);border:1px solid rgba(184,149,106,0.2);border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:0.78rem;color:var(--bronze);line-height:1.7;opacity:0.9;">
+                💡 <strong>해결 방법</strong><br>
+                브랜드 설명을 검색 후 복사해서 위 텍스트박스에 붙여넣으세요.<br>
+                <span style="opacity:0.75;">예: "Ernie Palo is a Japanese clothing brand founded by Ryo Yamaguchi…" 처럼 설명을 추가하면 바로 카드를 만들 수 있습니다.</span>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:center;">
+                <button class="save-btn" onclick="showManualEntry()" style="max-width:140px;font-size:0.85rem;">직접 입력</button>
+            </div>
         </div>
 
         <!-- Confirmed brand name (shown after found or manual) -->
@@ -2708,7 +2714,11 @@ async function searchBraveForBrand(shortQuery) {
             }).join('\n');
             const candidate = { title: results[0].title, extract: extract, source: 'Brave Search' };
             if (isBraveResultRelevant(shortQuery, candidate)) return candidate;
-        } catch(e) { continue; }
+        } catch(e) {
+            // Likely CORS preflight failure — Brave API requires server-side call
+            // Stop retrying and fall through to AI/Wikipedia
+            break;
+        }
     }
     return null;
 }
@@ -2796,6 +2806,11 @@ async function findAndCreateBrand() {
     const generateBtn = document.getElementById('generateBtn');
     const shortQuery = extractSearchTerm(desc);  // Always use short term for searches
 
+    // Extra text beyond the brand name — user may have pasted a description
+    const extraText = desc.length > shortQuery.length + 3
+        ? desc.slice(shortQuery.length).replace(/^[\s,;\-\.]+/, '').trim()
+        : '';
+
     generateBtn.disabled = true;
     generateBtn.textContent = '찾는 중...';
     document.getElementById('brandNotFoundSection').style.display = 'none';
@@ -2803,8 +2818,24 @@ async function findAndCreateBrand() {
     document.getElementById('saveBtn').style.display = 'none';
     document.getElementById('generatedEditFields').style.display = 'none';
 
+    function setResult(brandData, fallbackName) {
+        document.getElementById('brandNameInput').value = brandData.name || fallbackName;
+        document.getElementById('brandNameSection').style.display = 'block';
+        showGeneratedPreview(brandData);
+    }
+
     try {
-        // Step 1: Brave Search first (most reliable for small/niche brands)
+        // Step 0: User pasted extra description → use it directly as context (no API needed)
+        if (extraText.length > 20) {
+            generateBtn.textContent = '카드 생성 중...';
+            const userCtx = { title: shortQuery, extract: extraText, source: '사용자 입력' };
+            const brandData = await generateBrandCard(provider, apiKey, shortQuery, country, userCtx);
+            if (brandData && (brandData.name || brandData.description)) {
+                setResult(brandData, shortQuery); return;
+            }
+        }
+
+        // Step 1: Brave Search
         if (localStorage.getItem('mmall_brave_api_key')) {
             generateBtn.textContent = 'Brave 검색 중...';
             const braveResult = await searchBraveForBrand(shortQuery);
@@ -2812,10 +2843,7 @@ async function findAndCreateBrand() {
                 generateBtn.textContent = '카드 생성 중...';
                 const brandData = await generateBrandCard(provider, apiKey, shortQuery, country, braveResult);
                 if (brandData && (brandData.name || brandData.description)) {
-                    document.getElementById('brandNameInput').value = brandData.name || shortQuery;
-                    document.getElementById('brandNameSection').style.display = 'block';
-                    showGeneratedPreview(brandData);
-                    return;
+                    setResult(brandData, shortQuery); return;
                 }
             }
         }
@@ -2824,14 +2852,12 @@ async function findAndCreateBrand() {
         generateBtn.textContent = 'AI 식별 중...';
         const identified = await identifyBrand(provider, apiKey, shortQuery, country);
         if (identified.found && identified.confidence >= 70 && isRelevantMatch(shortQuery, identified.officialName)) {
-            document.getElementById('brandNameInput').value = identified.officialName || shortQuery;
-            document.getElementById('brandNameSection').style.display = 'block';
             if (identified.country && !country) {
                 document.getElementById('brandCountryInput').value = identified.country;
             }
             generateBtn.textContent = '카드 생성 중...';
             const brandData = await generateBrandCard(provider, apiKey, identified.officialName, identified.country || country, null);
-            if (brandData) { showGeneratedPreview(brandData); return; }
+            if (brandData) { setResult(brandData, identified.officialName); return; }
         }
 
         // Step 3: Wikipedia fallback
@@ -2841,10 +2867,7 @@ async function findAndCreateBrand() {
             generateBtn.textContent = '카드 생성 중...';
             const brandData = await generateBrandCard(provider, apiKey, shortQuery, country, wikiResult);
             if (brandData && (brandData.name || brandData.description)) {
-                document.getElementById('brandNameInput').value = brandData.name || shortQuery;
-                document.getElementById('brandNameSection').style.display = 'block';
-                showGeneratedPreview(brandData);
-                return;
+                setResult(brandData, shortQuery); return;
             }
         }
 
