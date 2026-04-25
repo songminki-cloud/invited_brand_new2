@@ -1720,53 +1720,45 @@ footer {
             </div>
             <div class="category-count" id="favCount">0 BRANDS →</div>
         </div>
-        <div class="category-card" onclick="showPage('philosophy')">
+        <div class="category-card" onclick="showPage('concept')">
             <div>
                 <div class="category-number">01</div>
-                <h2 class="category-title">Philosophy</h2>
-                <p class="category-subtitle">철학과 신념으로 세상을 바꾸는 브랜드들. 지속가능성, 장인정신, 혁신적 사고가 만든 본질의 가치.</p>
+                <h2 class="category-title">Concept</h2>
+                <p class="category-subtitle">철학과 비전으로 트렌드를 이끄는 브랜드들. 강력한 개념이 제품보다 먼저 존재한다.</p>
             </div>
-            <div class="category-count">39 BRANDS →</div>
+            <div class="category-count" id="count-concept">— BRANDS →</div>
         </div>
-        <div class="category-card" onclick="showPage('visual')">
+        <div class="category-card" onclick="showPage('street')">
             <div>
                 <div class="category-number">02</div>
-                <h2 class="category-title">Visual</h2>
-                <p class="category-subtitle">압도적인 비주얼로 시선을 사로잡는 브랜드들. 디자인 자체가 메시지이며, 예술이 되는 순간.</p>
+                <h2 class="category-title">Street</h2>
+                <p class="category-subtitle">서브컬처에서 탄생한 브랜드들. 스케이트, 힙합, 스포츠가 만든 거리의 미학.</p>
             </div>
-            <div class="category-count">27 BRANDS →</div>
+            <div class="category-count" id="count-street">— BRANDS →</div>
         </div>
-        <div class="category-card" onclick="showPage('scarcity')">
+        <div class="category-card" onclick="showPage('heritage')">
             <div>
                 <div class="category-number">03</div>
-                <h2 class="category-title">Scarcity</h2>
-                <p class="category-subtitle">희소성이 만드는 가치. 없어서 못 사는 브랜드, 한정된 수량이 만드는 열광.</p>
+                <h2 class="category-title">Heritage</h2>
+                <p class="category-subtitle">아카이브와 장인정신에 집착하는 브랜드들. 시간이 지날수록 가치가 높아진다.</p>
             </div>
-            <div class="category-count">34 BRANDS →</div>
+            <div class="category-count" id="count-heritage">— BRANDS →</div>
         </div>
-        <div class="category-card" onclick="showPage('narrative')">
+        <div class="category-card" onclick="showPage('emerging')">
             <div>
                 <div class="category-number">04</div>
-                <h2 class="category-title">Narrative</h2>
-                <p class="category-subtitle">강력한 스토리텔링으로 감정을 움직이는 브랜드들. 제품 너머의 이야기가 팬덤을 만든다.</p>
+                <h2 class="category-title">Emerging</h2>
+                <p class="category-subtitle">지금 막 주목받기 시작한 신흥 브랜드들. 내일의 트렌드가 여기서 시작된다.</p>
             </div>
-            <div class="category-count">26 BRANDS →</div>
-        </div>
-        <div class="category-card" onclick="showPage('inspiration')">
-            <div>
-                <div class="category-number">05</div>
-                <h2 class="category-title">Inspiration</h2>
-                <p class="category-subtitle">영감을 주는 공간과 경험. 방문 자체가 여정이 되는 곳, 삶의 방식을 제안하는 브랜드.</p>
-            </div>
-            <div class="category-count">24 BRANDS →</div>
+            <div class="category-count" id="count-emerging">— BRANDS →</div>
         </div>
         <div class="category-card" onclick="showPage('select_shop')">
             <div>
-                <div class="category-number">06</div>
+                <div class="category-number">05</div>
                 <h2 class="category-title">Select Shop</h2>
-                <p class="category-subtitle">세상의 아름다움을 큐레이션하는 편집샵들. 안목과 취향이 만드는 새로운 세계.</p>
+                <p class="category-subtitle">세상의 아름다움을 큐레이션하는 편집숍들. 안목과 취향이 만드는 새로운 세계.</p>
             </div>
-            <div class="category-count">17 BRANDS →</div>
+            <div class="category-count" id="count-select_shop">— BRANDS →</div>
         </div>
         <div class="category-card" onclick="showPage('my_archive')" style="border-color: rgba(184,149,106,0.4); background: linear-gradient(135deg, var(--warm-white) 0%, rgba(184,149,106,0.06) 100%);">
             <div>
@@ -1809,11 +1801,10 @@ footer {
 </div>
 
 <div id="favorites" class="page"></div>
-<div id="philosophy" class="page"></div>
-<div id="visual" class="page"></div>
-<div id="scarcity" class="page"></div>
-<div id="narrative" class="page"></div>
-<div id="inspiration" class="page"></div>
+<div id="concept" class="page"></div>
+<div id="street" class="page"></div>
+<div id="heritage" class="page"></div>
+<div id="emerging" class="page"></div>
 <div id="select_shop" class="page"></div>
 <div id="my_archive" class="page"></div>
 
@@ -1824,11 +1815,10 @@ footer {
         <div class="nav-item main" onclick="toggleNav(); setTimeout(() => showPage('index'), 100);">⌂ 메인으로</div>
         <div class="nav-item favorites" onclick="toggleNav(); setTimeout(() => showPage('favorites'), 100);">♥ My Favorites</div>
         <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('my_archive'), 100);">✦ My Archive</div>
-        <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('philosophy'), 100);">Philosophy</div>
-        <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('visual'), 100);">Visual</div>
-        <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('scarcity'), 100);">Scarcity</div>
-        <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('narrative'), 100);">Narrative</div>
-        <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('inspiration'), 100);">Inspiration</div>
+        <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('concept'), 100);">Concept</div>
+        <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('street'), 100);">Street</div>
+        <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('heritage'), 100);">Heritage</div>
+        <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('emerging'), 100);">Emerging</div>
         <div class="nav-item" onclick="toggleNav(); setTimeout(() => showPage('select_shop'), 100);">Select Shop</div>
     </div>
     <button class="nav-toggle" onclick="toggleNav()" id="navToggle">☰</button>
@@ -1908,11 +1898,10 @@ footer {
             <div class="form-group">
                 <label class="form-label">카테고리</label>
                 <select class="form-input" id="pendingCategory">
-                    <option value="philosophy">Philosophy</option>
-                    <option value="visual">Visual</option>
-                    <option value="scarcity">Scarcity</option>
-                    <option value="narrative">Narrative</option>
-                    <option value="inspiration">Inspiration</option>
+                    <option value="concept">Concept</option>
+                    <option value="street">Street</option>
+                    <option value="heritage">Heritage</option>
+                    <option value="emerging">Emerging</option>
                     <option value="select_shop">Select Shop</option>
                 </select>
             </div>
@@ -2059,12 +2048,11 @@ let DATA = {};
 
 const INFO = {
     favorites: {title: 'My Favorites', subtitle: '내가 좋아요한 브랜드들. 나만의 특별한 컬렉션.', count: 0},
-    philosophy: {title: 'Philosophy', subtitle: '철학과 신념으로 세상을 바꾸는 브랜드들. 지속가능성, 장인정신, 혁신적 사고가 만든 본질의 가치.', count: 39},
-    visual: {title: 'Visual', subtitle: '압도적인 비주얼로 시선을 사로잡는 브랜드들. 디자인 자체가 메시지이며, 예술이 되는 순간.', count: 27},
-    scarcity: {title: 'Scarcity', subtitle: '희소성이 만드는 가치. 없어서 못 사는 브랜드, 한정된 수량이 만드는 열광.', count: 34},
-    narrative: {title: 'Narrative', subtitle: '강력한 스토리텔링으로 감정을 움직이는 브랜드들. 제품 너머의 이야기가 팬덤을 만든다.', count: 26},
-    inspiration: {title: 'Inspiration', subtitle: '영감을 주는 공간과 경험. 방문 자체가 여정이 되는 곳, 삶의 방식을 제안하는 브랜드.', count: 24},
-    select_shop: {title: 'Select Shop', subtitle: '세상의 아름다움을 큐레이션하는 편집샵들. 안목과 취향이 만드는 새로운 세계.', count: 17}
+    concept: {title: 'Concept', subtitle: '철학과 비전으로 트렌드를 이끄는 브랜드들. 강력한 개념이 제품보다 먼저 존재한다.', count: 54},
+    street: {title: 'Street', subtitle: '서브컬처에서 탄생한 브랜드들. 스케이트, 힙합, 스포츠가 만든 거리의 미학.', count: 28},
+    heritage: {title: 'Heritage', subtitle: '아카이브와 장인정신에 집착하는 브랜드들. 시간이 지날수록 가치가 높아진다.', count: 14},
+    emerging: {title: 'Emerging', subtitle: '지금 막 주목받기 시작한 신흥 브랜드들. 내일의 트렌드가 여기서 시작된다.', count: 76},
+    select_shop: {title: 'Select Shop', subtitle: '세상의 아름다움을 큐레이션하는 편집숍들. 안목과 취향이 만드는 새로운 세계.', count: 22}
 };
 
 // Custom archive brands
@@ -2236,7 +2224,7 @@ function saveEditedBrand() {
     buildBrandIndex();
     loadCustomBrandsIntoData();  // re-add custom brands to allBrands after buildBrandIndex cleared it
 
-    ['favorites','philosophy','visual','scarcity','narrative','inspiration','select_shop','my_archive'].forEach(function(p) {
+    ['favorites','concept','street','heritage','emerging','select_shop','my_archive'].forEach(function(p) {
         var pg = document.getElementById(p); if (pg) pg.innerHTML = '';
     });
     closeEditModal();
@@ -2280,7 +2268,7 @@ function deleteFromEditModal() {
     rebuildAZList();
     addCustomBrandsToAZList();
 
-    ['favorites','philosophy','visual','scarcity','narrative','inspiration','select_shop','my_archive'].forEach(function(p) {
+    ['favorites','concept','street','heritage','emerging','select_shop','my_archive'].forEach(function(p) {
         var pg = document.getElementById(p); if (pg) pg.innerHTML = '';
     });
 
@@ -2450,11 +2438,10 @@ function showArchiveSelector(id) {
     var existing = card.querySelector('.archive-selector');
     if (existing) { existing.remove(); return; }
     var cats = [
-        {key:'philosophy', label:'Philosophy'},
-        {key:'visual', label:'Visual'},
-        {key:'scarcity', label:'Scarcity'},
-        {key:'narrative', label:'Narrative'},
-        {key:'inspiration', label:'Inspiration'},
+        {key:'concept', label:'Concept'},
+        {key:'street', label:'Street'},
+        {key:'heritage', label:'Heritage'},
+        {key:'emerging', label:'Emerging'},
         {key:'select_shop', label:'Select Shop'}
     ];
     var div = document.createElement('div');
@@ -2508,8 +2495,8 @@ function updateArchiveCount() {
 
 function getCategoryDisplayName(cat) {
     const names = {
-        philosophy: 'Philosophy', visual: 'Visual', scarcity: 'Scarcity',
-        narrative: 'Narrative', inspiration: 'Inspiration', select_shop: 'Select Shop'
+        concept: 'Concept', street: 'Street', heritage: 'Heritage',
+        emerging: 'Emerging', select_shop: 'Select Shop'
     };
     return names[cat] || cat;
 }
@@ -2770,10 +2757,10 @@ async function generateBrandCard(provider, apiKey, brandName, country, webContex
         '  "definition": "한국어 한 줄 정의 15-25자",\n' +
         '  "description": "한국어 설명 150-250자. 확인된 사실만",\n' +
         '  "homepage": "공식 URL. 불확실하면 빈 문자열",\n' +
-        '  "category": "philosophy | visual | scarcity | narrative | inspiration | select_shop"\n' +
+        '  "category": "concept | street | heritage | emerging | select_shop"\n' +
         '}\n\n' +
-        'philosophy=철학·장인정신, visual=비주얼·디자인, scarcity=희소성·드롭, ' +
-        'narrative=스토리텔링·팬덤, inspiration=공간·라이프스타일, select_shop=편집숍';
+        'concept=철학·비전, street=서브컬처·스트리트, heritage=아카이브·장인정신, ' +
+        'emerging=신흥브랜드, select_shop=편집숍';
 
     const content = await provider.call(apiKey, prompt, { temperature: 0.3 });
     return extractBrandJSON(content);
@@ -3493,11 +3480,10 @@ let allBrands = [];
 
 // Build searchable brand list from DATA + populate sorted A-Z DOM list
 const CATEGORY_NAMES = {
-    'philosophy': 'Philosophy',
-    'visual': 'Visual',
-    'scarcity': 'Scarcity',
-    'narrative': 'Narrative',
-    'inspiration': 'Inspiration',
+    'concept': 'Concept',
+    'street': 'Street',
+    'heritage': 'Heritage',
+    'emerging': 'Emerging',
     'select_shop': 'Select Shop',
     'my_archive': 'My Archive'
 };
@@ -3506,7 +3492,7 @@ const CATEGORY_NAMES = {
 // Also promote orphan overrides (unknown brands) into customBrands.
 function migrateOverridesIfNeeded() {
     var originalNames = new Set();
-    ['philosophy','visual','scarcity','narrative','inspiration','select_shop'].forEach(function(cat) {
+    ['concept','street','heritage','emerging','select_shop'].forEach(function(cat) {
         if (!DATA[cat]) return;
         DATA[cat].forEach(function(b) { originalNames.add(b.name); });
     });
@@ -3563,7 +3549,7 @@ function migrateOverridesIfNeeded() {
 
 function buildBrandIndex() {
     allBrands = [];
-    var regularCats = ['philosophy','visual','scarcity','narrative','inspiration','select_shop'];
+    var regularCats = ['concept','street','heritage','emerging','select_shop'];
     regularCats.forEach(function(category) {
         if (!DATA[category]) return;
         DATA[category].sort(function(a, b) { return a.name.localeCompare(b.name, 'ko-KR'); });
