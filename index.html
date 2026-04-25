@@ -2027,6 +2027,10 @@ footer {
             <input type="text" class="form-input" id="editBrandName">
         </div>
         <div class="form-group">
+            <label class="form-label">Country</label>
+            <input type="text" class="form-input" id="editCountry" placeholder="KR / UK / US / IT / FR ...">
+        </div>
+        <div class="form-group">
             <label class="form-label">Headline (영문 태그라인)</label>
             <input type="text" class="form-input" id="editHeadline">
         </div>
@@ -2151,6 +2155,7 @@ function openEditModal(brandName, category) {
     if (!brandData) return;
     var bd = applyOverrides(brandData);
     document.getElementById('editBrandName').value = bd.name || '';
+    document.getElementById('editCountry').value = bd.country || brandData.country || '';
     document.getElementById('editHeadline').value = bd.headline || '';
     document.getElementById('editDefinition').value = bd.definition || '';
     document.getElementById('editDescription').value = bd.description || '';
@@ -2207,6 +2212,7 @@ function saveEditedBrand() {
     var oldName = currentEditingBrandName;
     var ov = {
         name: document.getElementById('editBrandName').value.trim(),
+        country: document.getElementById('editCountry').value.trim(),
         headline: document.getElementById('editHeadline').value.trim(),
         definition: document.getElementById('editDefinition').value.trim(),
         description: document.getElementById('editDescription').value.trim(),
@@ -2214,33 +2220,17 @@ function saveEditedBrand() {
     };
     Object.keys(ov).forEach(function(k) { if (!ov[k]) delete ov[k]; });
 
-    // Always store override under ORIGINAL name (oldName from brands.json)
-    // so applyOverrides() can find it on every page load
     brandOverrides[oldName] = ov;
-    // Remove any stale key stored under new name (old incorrect approach)
     var newName = ov.name || oldName;
     if (newName !== oldName && brandOverrides[newName]) delete brandOverrides[newName];
     saveBrandOverrides();
 
-    // Update customBrands directly (they are user-defined, not from brands.json)
+    // For custom brands: update the object directly (single source of truth)
     var ci = customBrands.findIndex(function(b) { return b.name === oldName; });
     if (ci !== -1) {
         Object.assign(customBrands[ci], ov);
         saveCustomBrands();
-        // Keep DATA in sync for custom brands promoted to a category
-        var archivedCat = customBrands[ci].archivedCategory;
-        if (archivedCat && DATA[archivedCat]) {
-            var di = DATA[archivedCat].findIndex(function(b) { return b.name === oldName; });
-            if (di !== -1) {
-                Object.assign(DATA[archivedCat][di], {
-                    name: ov.name || oldName,
-                    headline: ov.headline || DATA[archivedCat][di].headline,
-                    definition: ov.definition || DATA[archivedCat][di].definition,
-                    description: ov.description || DATA[archivedCat][di].description,
-                    homepage: ov.homepage !== undefined ? ov.homepage : DATA[archivedCat][di].homepage
-                });
-            }
-        }
+        DATA.my_archive = customBrands.slice();
     }
 
     buildBrandIndex();
@@ -3436,11 +3426,18 @@ function showPage(cat) {
         page.innerHTML = '';
         const info = INFO[cat];
 
-        // System brands only (exclude any custom brand names to prevent duplicates)
+        // Merge system brands + custom brands, deduplicate by name, sort together
         var customNames = customCatBrands.map(function(cb) { return cb.name; });
         var sysBrands = (DATA[cat] || []).filter(function(b) { return !customNames.includes(b.name); });
+        var allCatBrands = sysBrands.concat(customCatBrands);
 
-        var totalCount = sysBrands.length + customCatBrands.length;
+        var sortedBrands = allCatBrands
+            .filter(function(b) { return !hiddenBrands.has(b.name); })
+            .sort(function(a, b) {
+                var na = (brandOverrides[a.name] && brandOverrides[a.name].name) || a.name;
+                var nb = (brandOverrides[b.name] && brandOverrides[b.name].name) || b.name;
+                return na.localeCompare(nb, 'ko-KR');
+            });
 
         let html = '<div class="header">';
         html += '<button class="back-link" onclick="showPage(\'index\')">← 돌아가기</button>';
@@ -3450,24 +3447,13 @@ function showPage(cat) {
         html += '<div class="page-hero">';
         html += '<h1 class="page-title">' + info.title + '</h1>';
         html += '<p class="page-subtitle">' + info.subtitle + '</p>';
-        html += '<p class="brand-count">' + totalCount + ' BRANDS</p>';
+        html += '<p class="brand-count">' + sortedBrands.length + ' BRANDS</p>';
         html += '</div>';
 
         html += '<div class="brands-grid">';
-
-        // Render system brands (sorted)
-        var sortedSys = sysBrands.filter(function(b) { return !hiddenBrands.has(b.name); }).sort(function(a, b) {
-            var na = (brandOverrides[a.name] && brandOverrides[a.name].name) || a.name;
-            var nb = (brandOverrides[b.name] && brandOverrides[b.name].name) || b.name;
-            return na.localeCompare(nb, 'ko-KR');
-        });
-        sortedSys.forEach(function(b, index) {
+        // All brands rendered identically — custom brands look the same as system brands
+        sortedBrands.forEach(function(b, index) {
             html += makeBrandCardHTML(b, index, cat, false);
-        });
-
-        // Render custom brands with full controls (edit / delete / move)
-        customCatBrands.forEach(function(cb, i) {
-            html += makeBrandCardHTML(cb, sortedSys.length + i, cat, true);
         });
 
         html += '</div>';
