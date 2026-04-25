@@ -2481,6 +2481,15 @@ function archiveBrandToCategory(id, category) {
     var idx = customBrands.findIndex(function(b) { return b.id === id; });
     if (idx === -1) return;
     var brand = customBrands[idx];
+
+    // Remove from previous category DATA if re-archiving
+    var oldCat = brand.archivedCategory;
+    if (oldCat && oldCat !== category && DATA[oldCat]) {
+        DATA[oldCat] = DATA[oldCat].filter(function(b) { return b.name !== brand.name; });
+        var oldPage = document.getElementById(oldCat);
+        if (oldPage) oldPage.innerHTML = '';
+    }
+
     brand.archivedCategory = category;
     saveCustomBrands();
 
@@ -2521,7 +2530,7 @@ function archiveBrandToCategory(id, category) {
 
 function updateArchiveCount() {
     const el = document.getElementById('archiveCount');
-    if (el) el.textContent = customBrands.filter(function(b) { return !b.archivedCategory; }).length + ' BRANDS →';
+    if (el) el.textContent = customBrands.length + ' BRANDS →';
 }
 
 function getCategoryDisplayName(cat) {
@@ -2673,10 +2682,10 @@ async function identifyBrand(provider, apiKey, shortQuery, country) {
         '브랜드명: "' + shortQuery + '"\n' +
         (country ? '국가 힌트: ' + country + '\n' : '') + '\n' +
         '중요 규칙 (반드시 준수):\n' +
-        '1. 이 정확한 브랜드명을 학습 데이터에서 명확히 알고 있어야만 found: true.\n' +
-        '2. 비슷한 이름의 다른 사람/브랜드로 대체하는 것은 절대 금지. 모르면 found: false.\n' +
+        '1. 이 브랜드명이 실존하는 브랜드라는 근거가 조금이라도 있으면 found: true.\n' +
+        '2. 비슷한 이름의 완전히 다른 사람/브랜드로 대체하는 것은 절대 금지. 모르면 found: false.\n' +
         '3. officialName은 반드시 입력 브랜드명과 동일하거나 그 공식 전체 명칭이어야 함.\n' +
-        '4. confidence: 0-100. 확실하지 않으면 60 미만으로.\n\n' +
+        '4. confidence: 0-100. 브랜드 존재가 확실하지 않으면 50 미만으로.\n\n' +
         '순수 JSON으로만 응답:\n' +
         '{"found": false, "confidence": 0, "officialName": "", "country": ""}';
 
@@ -2859,8 +2868,18 @@ async function findAndCreateBrand() {
 
         // Step 2: AI identification (temperature=0, with relevance check)
         generateBtn.textContent = 'AI 식별 중...';
-        const identified = await identifyBrand(provider, apiKey, shortQuery, country);
-        if (identified.found && identified.confidence >= 70 && isRelevantMatch(shortQuery, identified.officialName)) {
+        var identified = await identifyBrand(provider, apiKey, shortQuery, country);
+        // Retry with Latin-only if mixed query didn't pass (e.g. "Pulio 풀리오" → retry "Pulio")
+        if (!(identified.found && identified.confidence >= 60 && isRelevantMatch(shortQuery, identified.officialName))) {
+            var latinOnly = extractLatinWords(shortQuery).join(' ');
+            if (latinOnly && latinOnly !== shortQuery.toLowerCase().trim()) {
+                var id2 = await identifyBrand(provider, apiKey, latinOnly, country);
+                if (id2.found && id2.confidence >= 60 && isRelevantMatch(shortQuery, id2.officialName)) {
+                    identified = id2;
+                }
+            }
+        }
+        if (identified.found && identified.confidence >= 60 && isRelevantMatch(shortQuery, identified.officialName)) {
             if (identified.country && !country) {
                 document.getElementById('brandCountryInput').value = identified.country;
             }
@@ -2998,14 +3017,20 @@ function deleteCustomBrand(id, event) {
         saveFavorites();
     }
 
+    const archivedCat = customBrands[idx].archivedCategory;
     customBrands.splice(idx, 1);
     saveCustomBrands();
 
     if (DATA.my_archive) {
-        DATA.my_archive = DATA.my_archive.filter(function(b) { return b.id !== id; });
+        DATA.my_archive = DATA.my_archive.filter(function(b) { return b.name !== brandName; });
+    }
+    if (archivedCat && DATA[archivedCat]) {
+        DATA[archivedCat] = DATA[archivedCat].filter(function(b) { return b.name !== brandName; });
+        var catPage = document.getElementById(archivedCat);
+        if (catPage) catPage.innerHTML = '';
     }
 
-    allBrands = allBrands.filter(function(b) { return !(b.name === brandName && b.category === 'my_archive'); });
+    allBrands = allBrands.filter(function(b) { return b.name !== brandName || (b.category !== 'my_archive' && b.category !== archivedCat); });
 
     updateArchiveCount();
     addCustomBrandsToAZList();
@@ -3400,12 +3425,11 @@ function showPage(cat) {
         html += '<div class="page-hero">';
         html += '<h1 class="page-title">My Archive</h1>';
         html += '<p class="page-subtitle">내가 직접 발견하고 아카이빙한 브랜드들.</p>';
-        var visibleBrands = customBrands.filter(function(b) { return !b.archivedCategory; });
-        html += '<p class="brand-count">' + visibleBrands.length + ' BRANDS</p>';
+        html += '<p class="brand-count">' + customBrands.length + ' BRANDS</p>';
         html += '<button class="share-btn" onclick="openCreateModal()">+ 브랜드 추가</button>';
         html += '</div>';
 
-        if (visibleBrands.length === 0) {
+        if (customBrands.length === 0) {
             html += '<div style="text-align:center;padding:100px 20px;color:var(--bronze);">';
             html += '<p style="font-size:2.5rem;margin-bottom:20px;">✦</p>';
             html += '<p style="font-size:1.1rem;margin-bottom:10px;">아직 아카이빙한 브랜드가 없습니다</p>';
@@ -3414,7 +3438,7 @@ function showPage(cat) {
             html += '</div>';
         } else {
             html += '<div class="brands-grid">';
-            visibleBrands.forEach(function(b, index) {
+            customBrands.forEach(function(b, index) {
                 html += makeBrandCardHTML(b, index, 'my_archive', true);
             });
             html += '</div>';
