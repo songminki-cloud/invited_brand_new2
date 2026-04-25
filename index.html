@@ -2234,7 +2234,7 @@ function saveEditedBrand() {
     }
 
     buildBrandIndex();
-    addCustomBrandsToAZList();
+    loadCustomBrandsIntoData();  // re-add custom brands to allBrands after buildBrandIndex cleared it
 
     ['favorites','philosophy','visual','scarcity','narrative','inspiration','select_shop','my_archive'].forEach(function(p) {
         var pg = document.getElementById(p); if (pg) pg.innerHTML = '';
