@@ -2255,7 +2255,7 @@ function deleteFromEditModal() {
     if (ci !== -1) {
         customBrands.splice(ci, 1);
         saveCustomBrands();
-        if (DATA.my_archive) DATA.my_archive = DATA.my_archive.filter(function(b) { return b.name !== brandName; });
+        DATA.my_archive = customBrands.slice();
     } else {
         // Regular brand: add to hidden list
         hiddenBrands.add(brandName);
@@ -2475,6 +2475,7 @@ function archiveBrandToCategory(id, category) {
 
     brand.archivedCategory = category;
     saveCustomBrands();
+    DATA.my_archive = customBrands.slice();  // keep lookup table in sync
 
     // Update allBrands entry
     var ab = allBrands.find(function(b) { return b.name === brand.name; });
@@ -2952,9 +2953,7 @@ function saveGeneratedBrand() {
 
     customBrands.push(brand);
     saveCustomBrands();
-
-    if (!DATA.my_archive) DATA.my_archive = [];
-    DATA.my_archive.push(brand);
+    DATA.my_archive = customBrands.slice();  // full sync — never discard moved brands
 
     allBrands.push({
         name: brand.name,
@@ -2992,10 +2991,7 @@ function deleteCustomBrand(id, event) {
     const archivedCat = customBrands[idx].archivedCategory;
     customBrands.splice(idx, 1);
     saveCustomBrands();
-
-    if (DATA.my_archive) {
-        DATA.my_archive = DATA.my_archive.filter(function(b) { return b.name !== brandName; });
-    }
+    DATA.my_archive = customBrands.slice();
 
     allBrands = allBrands.filter(function(b) { return b.name !== brandName; });
 
@@ -3019,9 +3015,9 @@ function deleteCustomBrand(id, event) {
 }
 
 function loadCustomBrandsIntoData() {
-    if (customBrands.length === 0) return;
-    // DATA.my_archive holds all customBrands for search/edit lookups
+    // Always set DATA.my_archive — even when empty — so openEditModal can always search it
     DATA.my_archive = customBrands.slice();
+    if (customBrands.length === 0) return;
     // Register in allBrands for A-Z search — category reflects where it actually lives
     customBrands.forEach(function(brand) {
         var cat = brand.archivedCategory || 'my_archive';
