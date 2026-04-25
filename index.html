@@ -2481,32 +2481,10 @@ function archiveBrandToCategory(id, category) {
     var idx = customBrands.findIndex(function(b) { return b.id === id; });
     if (idx === -1) return;
     var brand = customBrands[idx];
-
-    // Remove from previous category DATA if re-archiving
     var oldCat = brand.archivedCategory;
-    if (oldCat && oldCat !== category && DATA[oldCat]) {
-        DATA[oldCat] = DATA[oldCat].filter(function(b) { return b.name !== brand.name; });
-        var oldPage = document.getElementById(oldCat);
-        if (oldPage) oldPage.innerHTML = '';
-    }
 
     brand.archivedCategory = category;
     saveCustomBrands();
-
-    // Add to DATA[category] as a clean regular-brand object (no isCustom / archivedCategory)
-    if (!DATA[category]) DATA[category] = [];
-    var alreadyIn = DATA[category].some(function(b) { return b.name === brand.name; });
-    if (!alreadyIn) {
-        DATA[category].push({
-            name: brand.name,
-            country: brand.country || '',
-            headline: brand.headline || '',
-            definition: brand.definition || '',
-            description: brand.description || '',
-            homepage: brand.homepage || '',
-            category: category
-        });
-    }
 
     // Update allBrands entry
     var ab = allBrands.find(function(b) { return b.name === brand.name; });
@@ -2515,9 +2493,13 @@ function archiveBrandToCategory(id, category) {
         ab.categoryDisplay = getCategoryDisplayName(category);
     }
 
-    // Clear page caches
+    // Clear affected page caches so they re-render
     var catPage = document.getElementById(category);
     if (catPage) catPage.innerHTML = '';
+    if (oldCat && oldCat !== category) {
+        var oldPage = document.getElementById(oldCat);
+        if (oldPage) oldPage.innerHTML = '';
+    }
     var archivePage = document.getElementById('my_archive');
     if (archivePage) archivePage.innerHTML = '';
 
@@ -2530,7 +2512,7 @@ function archiveBrandToCategory(id, category) {
 
 function updateArchiveCount() {
     const el = document.getElementById('archiveCount');
-    if (el) el.textContent = customBrands.length + ' BRANDS →';
+    if (el) el.textContent = customBrands.filter(function(b) { return !b.archivedCategory; }).length + ' BRANDS →';
 }
 
 function getCategoryDisplayName(cat) {
@@ -3024,27 +3006,33 @@ function deleteCustomBrand(id, event) {
     if (DATA.my_archive) {
         DATA.my_archive = DATA.my_archive.filter(function(b) { return b.name !== brandName; });
     }
-    if (archivedCat && DATA[archivedCat]) {
-        DATA[archivedCat] = DATA[archivedCat].filter(function(b) { return b.name !== brandName; });
-        var catPage = document.getElementById(archivedCat);
-        if (catPage) catPage.innerHTML = '';
-    }
 
-    allBrands = allBrands.filter(function(b) { return b.name !== brandName || (b.category !== 'my_archive' && b.category !== archivedCat); });
+    allBrands = allBrands.filter(function(b) { return b.name !== brandName; });
+
+    // Clear page caches for the affected pages
+    const archivePage = document.getElementById('my_archive');
+    if (archivePage) archivePage.innerHTML = '';
+    if (archivedCat) {
+        var catPageEl = document.getElementById(archivedCat);
+        if (catPageEl) catPageEl.innerHTML = '';
+    }
 
     updateArchiveCount();
     addCustomBrandsToAZList();
-    const archivePage = document.getElementById('my_archive');
-    if (archivePage) archivePage.innerHTML = '';
-    if (document.getElementById('my_archive').classList.contains('active')) {
-        showPage('my_archive');
+
+    // Re-render whichever page is currently active
+    var activeEl = document.querySelector('.page.active');
+    var activeCat = activeEl ? activeEl.id : null;
+    if (activeCat === 'my_archive' || activeCat === archivedCat) {
+        showPage(activeCat);
     }
 }
 
 function loadCustomBrandsIntoData() {
     if (customBrands.length === 0) return;
-    if (!DATA.my_archive) DATA.my_archive = [];
+    // DATA.my_archive holds all customBrands for search/edit lookups
     DATA.my_archive = customBrands.slice();
+    // Register in allBrands for A-Z search — category reflects where it actually lives
     customBrands.forEach(function(brand) {
         var cat = brand.archivedCategory || 'my_archive';
         allBrands.push({
@@ -3055,21 +3043,6 @@ function loadCustomBrandsIntoData() {
             headline: brand.headline,
             definition: brand.definition
         });
-        if (brand.archivedCategory) {
-            if (!DATA[brand.archivedCategory]) DATA[brand.archivedCategory] = [];
-            var exists = DATA[brand.archivedCategory].some(function(b) { return b.name === brand.name; });
-            if (!exists) {
-                DATA[brand.archivedCategory].push({
-                    name: brand.name,
-                    country: brand.country || '',
-                    headline: brand.headline || '',
-                    definition: brand.definition || '',
-                    description: brand.description || '',
-                    homepage: brand.homepage || '',
-                    category: brand.archivedCategory
-                });
-            }
-        }
     });
     updateArchiveCount();
     rebuildAZList();
@@ -3425,11 +3398,12 @@ function showPage(cat) {
         html += '<div class="page-hero">';
         html += '<h1 class="page-title">My Archive</h1>';
         html += '<p class="page-subtitle">내가 직접 발견하고 아카이빙한 브랜드들.</p>';
-        html += '<p class="brand-count">' + customBrands.length + ' BRANDS</p>';
+        var archiveBrands = customBrands.filter(function(b) { return !b.archivedCategory; });
+        html += '<p class="brand-count">' + archiveBrands.length + ' BRANDS</p>';
         html += '<button class="share-btn" onclick="openCreateModal()">+ 브랜드 추가</button>';
         html += '</div>';
 
-        if (customBrands.length === 0) {
+        if (archiveBrands.length === 0) {
             html += '<div style="text-align:center;padding:100px 20px;color:var(--bronze);">';
             html += '<p style="font-size:2.5rem;margin-bottom:20px;">✦</p>';
             html += '<p style="font-size:1.1rem;margin-bottom:10px;">아직 아카이빙한 브랜드가 없습니다</p>';
@@ -3438,7 +3412,7 @@ function showPage(cat) {
             html += '</div>';
         } else {
             html += '<div class="brands-grid">';
-            customBrands.forEach(function(b, index) {
+            archiveBrands.forEach(function(b, index) {
                 html += makeBrandCardHTML(b, index, 'my_archive', true);
             });
             html += '</div>';
@@ -3456,34 +3430,17 @@ function showPage(cat) {
     }
 
     // Regular category pages
-    var hasCustomInCat = customBrands.some(function(b) { return b.archivedCategory === cat; });
+    var customCatBrands = customBrands.filter(function(b) { return b.archivedCategory === cat; });
+    var hasCustomInCat = customCatBrands.length > 0;
     if (page.innerHTML === '' || hasCustomInCat) {
         page.innerHTML = '';
         const info = INFO[cat];
 
-        // Merge DATA[cat] with any custom brands assigned to this category
-        var catBrands = (DATA[cat] || []).slice();
-        customBrands.forEach(function(cb) {
-            if (cb.archivedCategory === cat) {
-                var alreadyIn = catBrands.some(function(b) {
-                    if (b.name === cb.name) return true;
-                    // Also match when the DATA entry still has the old name but override renamed it
-                    var overrideName = brandOverrides[b.name] && brandOverrides[b.name].name;
-                    return overrideName && overrideName === cb.name;
-                });
-                if (!alreadyIn) {
-                    catBrands.push({
-                        name: cb.name,
-                        country: cb.country || '',
-                        headline: cb.headline || '',
-                        definition: cb.definition || '',
-                        description: cb.description || '',
-                        homepage: cb.homepage || '',
-                        category: cat
-                    });
-                }
-            }
-        });
+        // System brands only (exclude any custom brand names to prevent duplicates)
+        var customNames = customCatBrands.map(function(cb) { return cb.name; });
+        var sysBrands = (DATA[cat] || []).filter(function(b) { return !customNames.includes(b.name); });
+
+        var totalCount = sysBrands.length + customCatBrands.length;
 
         let html = '<div class="header">';
         html += '<button class="back-link" onclick="showPage(\'index\')">← 돌아가기</button>';
@@ -3493,23 +3450,29 @@ function showPage(cat) {
         html += '<div class="page-hero">';
         html += '<h1 class="page-title">' + info.title + '</h1>';
         html += '<p class="page-subtitle">' + info.subtitle + '</p>';
-        html += '<p class="brand-count">' + catBrands.length + ' BRANDS</p>';
+        html += '<p class="brand-count">' + totalCount + ' BRANDS</p>';
         html += '</div>';
 
         html += '<div class="brands-grid">';
 
-        var sortedBrands = catBrands.filter(b => !hiddenBrands.has(b.name)).sort(function(a, b) {
+        // Render system brands (sorted)
+        var sortedSys = sysBrands.filter(function(b) { return !hiddenBrands.has(b.name); }).sort(function(a, b) {
             var na = (brandOverrides[a.name] && brandOverrides[a.name].name) || a.name;
             var nb = (brandOverrides[b.name] && brandOverrides[b.name].name) || b.name;
             return na.localeCompare(nb, 'ko-KR');
         });
-        sortedBrands.forEach((b, index) => {
+        sortedSys.forEach(function(b, index) {
             html += makeBrandCardHTML(b, index, cat, false);
+        });
+
+        // Render custom brands with full controls (edit / delete / move)
+        customCatBrands.forEach(function(cb, i) {
+            html += makeBrandCardHTML(cb, sortedSys.length + i, cat, true);
         });
 
         html += '</div>';
         html += '<footer>© 2026 M·MALL INVITED · ' + info.title.toUpperCase() + '</footer>';
-        
+
         page.innerHTML = html;
     }
     
