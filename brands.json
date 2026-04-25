@@ -12,7 +12,8 @@
       "country": "Korea",
       "headline": "Sun-bleached Future",
       "definition": "햇빛이 만든 유일무이한 패턴",
-      "description": "자연광에 원단을 노출시키는 'Sun-bleach' 기법으로 지속 가능성과 희소성을 동시에 확보한 글로벌 라이징 스타입니다."
+      "description": "지용킴(JiyongKim)은 혁신적인 디자인과 독창적인 스타일로 주목받는 한국의 패션 브랜드입니다. 2010년에 설립된 이 브랜드는 디자이너 지용 킴의 개인적인 경험과 문화적 배경을 바탕으로 현대적인 감각을 더한 클래식한 아이템을 선보입니다. 브랜드 철학은 ‘일상에서의 특별함’으로, 착용자가 매일의 삶 속에서도 자신만의 개성을 표현할 수 있도록 돕는 것입니다. 지용킴은 고급스러운 소재와 세심한 디테일로 소비자들에게 사랑받으며, 지속 가능한 패션을 지향하는 가치를 실현해 나가고 있습니다. 특히, 독창적인 패턴과 색감을 활용한 디자인은 국내외 패션계에서 큰 주목을 받고 있습니다.",
+      "homepage": "https://jiyongkim.net/"
     },
     {
       "name": "르917 (LeSeptember)",
@@ -84,7 +85,8 @@
       "country": "Belgium",
       "headline": "Furniture as Sculpture",
       "definition": "가구와 예술의 경계를 허물다",
-      "description": "벨기에 출신의 비주얼 아티스트 듀오가 만든 브랜드. 가구를 기능적인 도구가 아닌 '공간에 놓인 조각품'으로 해석합니다. HAY보다 과감한 컬러와 소재 사용으로 전 세계 컬렉터들의 수집 대상이 되었습니다."
+      "description": "벨기에 출신의 비주얼 아티스트 듀오가 만든 브랜드. 가구를 기능적인 도구가 아닌 '공간에 놓인 조각품'으로 해석합니다. HAY보다 과감한 컬러와 소재 사용으로 전 세계 컬렉터들의 수집 대상이 되었습니다.",
+      "homepage": "https://www.mullervanseveren.com"
     },
     {
       "name": "틴에이지 엔지니어링 (Teenage Enginneering)",
@@ -327,10 +329,18 @@
     {
       "name": "우영미 (Wooyoungmi)",
       "country": "South Korea",
-      "headline": "Timeless Elegance in Fashion",
-      "definition": "한국의 대표 디자이너 브랜드",
-      "description": "우영미는 2002년 한국의 의류 디자이너 우영미에 의해 설립된 브랜드로, 현대적이고 세련된 디자인을 특징으로 합니다. 브랜드는 남성과 여성 모두를 위한 의류를 제공하며, 고급스러운 소재와 독창적인 스타일로 국내외에서 주목받고 있습니다. 우영미는 패션의 경계를 허물며, 다양한 문화적 요소를 반영한 컬렉션을 선보이고 있습니다.",
-      "homepage": "https://www.wooyoungmi.com/"
+      "headline": "Timeless Elegance and Innovation",
+      "definition": "모던한 감각의 남성복 브랜드",
+      "description": "우영미는 2002년 설립된 대한민국의 남성복 브랜드로, 현대적이고 세련된 디자인을 통해 남성 패션의 새로운 기준을 제시하고 있습니다. 브랜드는 전통적인 장인정신과 현대적인 감각을 결합하여 고유한 스타일을 창출하며, 글로벌 패션 시장에서도 주목받고 있습니다. 우영미는 다양한 컬렉션을 통해 개성과 품질을 강조하며, 지속 가능한 패션을 지향합니다.",
+      "homepage": ""
+    },
+    {
+      "name": "산타 마리아 노벨라 (Santa Maria Novella)",
+      "country": "Italy",
+      "headline": "Heritage of Italian Craftsmanship",
+      "definition": "이탈리아의 전통 약초 브랜드",
+      "description": "산타 마리아 노벨라는 1221년에 설립된 이탈리아의 전통 약초 브랜드로, 고대 약초와 자연 재료를 사용하여 향수, 스킨케어, 바디 제품을 만듭니다. 이 브랜드는 피렌체의 수도원에서 시작되어, 오랜 역사와 장인정신을 바탕으로 한 품질 높은 제품을 제공합니다. 산타 마리아 노벨라는 자연과의 조화를 중시하며, 현대적인 감각을 더한 클래식한 디자인으로 많은 사랑을 받고 있습니다.",
+      "homepage": "https://www.santamarianovella.com"
     }
   ],
   "visual": [
@@ -546,6 +556,21 @@
       "definition": "유니크한 스트리트웨어 브랜드",
       "description": "Vandy The Pink(반디 더 핑크)는 미국을 거점으로 활동하는 디자이너 손정훈(Junghoon Son)이 전개하는 브랜드 입니다. 패스트푸드, 햄버거, 감자튀김 등 기발한 영역에서 영감을 얻으며 매 시즌 다양한 브랜드와의 협업을 선보입니다.",
       "homepage": "https://www.onvandylab.org/"
+    },
+    {
+      "name": "앤더슨 벨 (Anderson Bell)",
+      "country": "",
+      "headline": "Contemporary Fashion for All",
+      "definition": "모던하고 세련된 패션 브랜드",
+      "description": "앤더슨벨(Andersson Bell)은 2014년 서울에서 설립된 대한민국 컨템포러리 패션 브랜드입니다. 스웨덴의 흔한 성인 '앤더슨(Andersson)'과 한국 전통 사원의 종을 뜻하는 '벨(Bell)'을 결합한 이름으로, 북유럽의 미니멀리즘과 한국의 역동적인 스트리트 감성을 융합한 '이질적인 것의 조화'를 브랜드의 핵심 가치로 삼고 있습니다.",
+      "homepage": "https://anderssonbell.com/"
+    },
+    {
+      "name": "마리떼 프랑소와 저버 (Marithe Francois Girbaud)",
+      "country": "France",
+      "headline": "Innovative Denim Fashion",
+      "definition": "프랑스의 혁신적인 데님 브랜드",
+      "description": "마리떼 프랑소와 저버는 프랑스의 데님 브랜드로, 독창적인 디자인과 혁신적인 패턴으로 유명합니다. 이 브랜드는 전통적인 데님 제작 방식에 현대적인 감각을 더하여, 다양한 스타일과 기능성을 갖춘 의류를 선보입니다. 특히, 지속 가능한 패션에 대한 관심이 높아짐에 따라 환경 친화적인 소재와 생산 방식을 채택하고 있습니다."
     }
   ],
   "scarcity": [
@@ -984,6 +1009,14 @@
       "headline": "World Champion from Busan",
       "definition": "부산이 낳은 월드 챔피언의 산실",
       "description": "한국 최초 월드 바리스타 챔피언(전주연)을 배출하며 한국 커피의 위상을 세계에 알린 브랜드. \"스페셜티 커피를 모두에게\"라는 철학 아래, 부산 영도와 온천장을 커피 순례자들의 성지로 만들었습니다."
+    },
+    {
+      "name": "Engineered Garments",
+      "country": "Japan",
+      "headline": "Functional and Stylish Apparel",
+      "definition": "기능성과 스타일을 겸비한 의류 브랜드",
+      "description": "\"일본인이 재해석한 가장 미국적인 옷, 뉴욕발 워크웨어의 정점\"\n1999년 디자이너 스즈키 다이키에 의해 뉴욕에서 시작된 엔지니어드 가먼츠는 아메리칸 클래식, 워크웨어, 밀리터리웨어를 기반으로 합니다. '설계된(Engineered)'이라는 이름처럼 정교한 디테일, 기능적인 포켓, 레이어링이 돋보이는 실루엣을 통해 단순한 옷을 넘어 하나의 문화와 감성을 제안합니다.",
+      "homepage": "https://www.engineeredgarments.com"
     }
   ],
   "inspiration": [
@@ -1162,6 +1195,14 @@
       "definition": "프랑스의 스피커 브랜드",
       "description": "발롱드파리는 프랑스의 스피커 브랜드로, 고유의 오디오 경험과 우아한 디자인을 결합하여 독창적인 제품을 선보이고 있습니다. 이 브랜드는 청각적 쾌감뿐만 아니라 시각적인 아름다움도 중요시하며, 이를 통해 소비자에게 새로운 라이프스타일을 제안합니다.",
       "homepage": "https://ballondeparis.co/"
+    },
+    {
+      "name": "프로토타입 (Prototype)",
+      "country": "Swiss",
+      "headline": "Sustainable Fashion Innovation",
+      "definition": "업사이클링을 통한 지속 가능한 패션",
+      "description": "스위스 기반 업사이클링 브랜드 프토토타입([@prototype.ch](https://www.instagram.com/prototypes.ch/))과 알파 인더스트리가 협업 컬렉션을 선보였다. 알파 인더스트리의 데드스탁 원단과 빈티지 피스들을 분해해 프토토타입의 감각을 거쳐 재탄생",
+      "homepage": "https://www.instagram.com/prototypes.ch?igsh=MWx5aHNmcnEzMGJzcw=="
     }
   ],
   "select_shop": [
@@ -1283,6 +1324,14 @@
       "headline": "Cult of Personality",
       "definition": "매니아를 위한 독보적인 취향의 요새",
       "description": "니들스, 엔지니어드 가먼츠 등을 배출한 편집샵이자 브랜드 인큐베이터. 유행을 따르지 않고 자신들만의 확고한 세계관을 구축했습니다."
+    },
+    {
+      "name": "10 Corso Como",
+      "country": "Italy",
+      "headline": "Concept Store and Gallery",
+      "definition": "이탈리아 밀라노의 편집숍",
+      "description": "10 Corso Como는 이탈리아 밀라노에 위치한 유명한 편집숍으로, 패션, 디자인, 아트, 라이프스타일을 아우르는 다양한 제품을 선보입니다. 1990년에 설립되어, 독특한 쇼핑 경험과 함께 예술 전시 공간으로도 기능하며, 세계적인 브랜드와의 협업을 통해 독창적인 컬렉션을 제공합니다. 이곳은 패션과 문화의 융합을 경험할 수 있는 특별한 장소로 알려져 있습니다.",
+      "homepage": "https://www.10corsocomo.com"
     }
   ]
 }
