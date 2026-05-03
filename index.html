@@ -2082,7 +2082,7 @@ function makeBrandCardHTML(b, index, cat, isCustom) {
     var safeName = b.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     var quotedName = b.name.replace(/"/g, '&quot;');
     var escapedName = (bd.name||b.name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    var hp = (brandOverrides[b.name] && brandOverrides[b.name].homepage) || (b.homepage || '');
+    var hp = (brandOverrides[b.name] && brandOverrides[b.name].homepage) || (b.homepage || b.instagram || '');
     var safeCat = (cat || '').replace(/'/g, "\\'");
 
     // Determine link type
@@ -3835,6 +3835,7 @@ async function backupToGitHub(pat) {
                 description: brand.description || ''
             };
             if (brand.homepage) entry.homepage = brand.homepage;
+            if (brand.instagram) entry.instagram = brand.instagram;
             brandsJson[cat].push(entry);
         }
     });
@@ -3895,9 +3896,15 @@ window.addEventListener('DOMContentLoaded', function() {
                         var serverCustom = backup.customBrands || [];
                         Object.assign(brandOverrides, serverOverrides);
                         serverCustom.forEach(function(sb) {
-                            var exists = customBrands.some(function(lb) { return lb.id === sb.id || lb.name === sb.name; });
-                            if (!exists) customBrands.push(sb);
+                            var idx = customBrands.findIndex(function(lb) { return lb.id === sb.id || lb.name === sb.name; });
+                            if (idx >= 0) {
+                                // Server backup is source of truth for link fields and latest metadata.
+                                customBrands[idx] = Object.assign({}, customBrands[idx], sb);
+                            } else {
+                                customBrands.push(sb);
+                            }
                         });
+                        localStorage.setItem('mmall_custom_brands', JSON.stringify(customBrands));
                     }
                     // Load favorites backup
                     return fetch('favorites_backup.json?_=' + Date.now())
