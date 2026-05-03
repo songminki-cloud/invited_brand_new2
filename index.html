@@ -2216,7 +2216,12 @@ function openEditModal(brandName, category) {
     document.getElementById('editHeadline').value = bd.headline || '';
     document.getElementById('editDefinition').value = bd.definition || '';
     document.getElementById('editDescription').value = bd.description || '';
-    document.getElementById('editHomepage').value = (brandOverrides[brandName] && brandOverrides[brandName].homepage) || '';
+    var canonicalLinks = findCanonicalBrandLinks(brandData);
+    document.getElementById('editHomepage').value = (brandOverrides[brandName] && brandOverrides[brandName].homepage) || brandData.homepage || canonicalLinks.homepage || '';
+    var igInput = document.getElementById('editInstagram');
+    if (igInput) igInput.value = brandData.instagram || canonicalLinks.instagram || '';
+    var linkStatus = document.getElementById('editLinkStatus');
+    if (linkStatus) linkStatus.textContent = '';
     document.getElementById('editBrandModal').classList.add('active');
     setTimeout(function() { document.getElementById('editBrandName').focus(); }, 120);
 }
@@ -2243,26 +2248,88 @@ async function regenerateDescription(btn) {
     btn.textContent = orig; btn.disabled = false;
 }
 
-async function findHomepageAI(btn) {
-    if (!currentEditingBrandName) return;
-    var provider = API_PROVIDERS[selectedProvider];
-    var apiKey = localStorage.getItem(provider.storageKey) || '';
-    if (!apiKey) { openApiKeyModal(); return; }
-    var name = document.getElementById('editBrandName').value.trim() || currentEditingBrandName;
-    var orig = btn.textContent;
-    btn.textContent = '찾는 중...'; btn.disabled = true;
+async function verifyUrlReachable(url) {
+    if (!url) return { ok: true, status: 'empty' };
+    if (!/^https?:\/\//i.test(url)) return { ok: false, status: 'invalid' };
+    // In-browser verification is limited by CORS. no-cors confirms network reachability
+    // without exposing HTTP status; opening the link remains the final human check.
     try {
-        var prompt = '패션/라이프스타일 브랜드 "' + name + '"의 공식 홈페이지 URL을 알려주세요. https://로 시작하는 URL 하나만 답해주세요. 다른 텍스트 없이 URL만.';
-        var content = await provider.call(apiKey, prompt);
-        var urlMatch = content.match(/https?:\/\/[^\s\n"'<>]+/);
-        if (urlMatch) {
-            document.getElementById('editHomepage').value = urlMatch[0].replace(/[.,;)>]+$/, '');
-        } else {
-            alert('홈페이지를 찾지 못했습니다. 직접 입력해주세요.');
+        await fetch(url, { method: 'HEAD', mode: 'no-cors', cache: 'no-store' });
+        return { ok: true, status: 'reachable' };
+    } catch (e1) {
+        try {
+            await fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' });
+            return { ok: true, status: 'reachable' };
+        } catch (e2) {
+            return { ok: false, status: 'failed' };
         }
-    } catch(e) { alert('오류: ' + e.message); }
-    btn.textContent = orig; btn.disabled = false;
+    }
 }
+
+async function verifyEditLinks(btn) {
+    var hp = document.getElementById('editHomepage').value.trim();
+    var igEl = document.getElementById('editInstagram');
+    var ig = igEl ? igEl.value.trim() : '';
+    var status = document.getElementById('editLinkStatus');
+    if (!hp && !ig) {
+        status.textContent = '홈페이지 또는 인스타그램 중 하나는 필요합니다.';
+        status.style.color = '#b45b4d';
+        return false;
+    }
+    var old = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = '확인 중...'; }
+    var hpResult = await verifyUrlReachable(hp);
+    var igResult = await verifyUrlReachable(ig);
+    if (btn) { btn.disabled = false; btn.textContent = old || '링크 작동 확인'; }
+    var messages = [];
+    if (hp) messages.push('Homepage: ' + (hpResult.ok ? '열림 확인' : '확인 실패'));
+    if (ig) messages.push('Instagram: ' + (igResult.ok ? '열림 확인' : '확인 실패'));
+    status.textContent = messages.join(' · ') + ' / 저장 전 직접 열어 최종 확인 권장';
+    status.style.color = (hpResult.ok && igResult.ok) ? 'var(--bronze)' : '#b45b4d';
+    return hpResult.ok && igResult.ok;
+}
+
+async function findLinksAI(btn) {
+    if (!currentEditingBrandName) return;
+    var provider = getSelectedProvider();
+    var apiKey = getApiKeyForProvider(provider.id);
+    if (!apiKey) { alert('AI API 키를 먼저 설정해주세요.'); return; }
+    var old = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '구글/웹 확인 기반 검색 중...';
+    try {
+        var brandName = document.getElementById('editBrandName').value.trim() || currentEditingBrandName;
+        var country = document.getElementById('editCountry').value.trim();
+        const prompt =
+            '당신은 브랜드 공식 링크 검증 담당자입니다. 반드시 실제 웹 검색/공식 출처 확인이 가능한 링크만 반환하세요.\n' +
+            '브랜드명: ' + brandName + '\n' +
+            (country ? '국가 힌트: ' + country + '\n' : '') +
+            '규칙:\n' +
+            '1. 공식 홈페이지와 공식 인스타그램을 찾으세요.\n' +
+            '2. 구글 검색으로 찾을 수 있는 실존 페이지 수준의 확실한 링크만 넣으세요.\n' +
+            '3. 추측 도메인, 팬 계정, 동명이인, 리셀러/편집숍 페이지는 금지입니다.\n' +
+            '4. 공식 홈페이지가 없거나 확실하지 않으면 homepage는 빈 문자열.\n' +
+            '5. 공식 인스타그램이 없거나 확실하지 않으면 instagram은 빈 문자열.\n' +
+            '6. 둘 다 없으면 include: false, reason에 등재 재검토 사유를 쓰세요.\n' +
+            '7. 순수 JSON만 응답하세요.\n' +
+            '{"homepage":"","instagram":"","include":true,"reason":"","evidence":""}';
+        const content = await provider.call(apiKey, prompt, { temperature: 0, maxTokens: 512 });
+        var data = extractBrandJSON(content) || {};
+        if (data.homepage && /^https?:\/\//i.test(data.homepage)) document.getElementById('editHomepage').value = data.homepage;
+        if (data.instagram && /^https?:\/\/([^/]+\.)?instagram\.com\//i.test(data.instagram)) document.getElementById('editInstagram').value = data.instagram;
+        var status = document.getElementById('editLinkStatus');
+        status.textContent = data.include === false ? ('등재 재검토: ' + (data.reason || '공식 접점 확인 실패')) : ('AI 후보 반영: ' + (data.evidence || '저장 전 링크 작동 확인을 눌러주세요.'));
+        status.style.color = data.include === false ? '#b45b4d' : 'var(--bronze)';
+    } catch(e) {
+        alert('링크 검색 실패: ' + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = old;
+    }
+}
+
+// Backward compatible alias for old button handlers
+async function findHomepageAI(btn) { return findLinksAI(btn); }
 
 function saveEditedBrand() {
     if (!currentEditingBrandName) return;
@@ -2273,8 +2340,12 @@ function saveEditedBrand() {
         headline: document.getElementById('editHeadline').value.trim(),
         definition: document.getElementById('editDefinition').value.trim(),
         description: document.getElementById('editDescription').value.trim(),
-        homepage: document.getElementById('editHomepage').value.trim()
+        homepage: document.getElementById('editHomepage').value.trim(),
+        instagram: (document.getElementById('editInstagram') && document.getElementById('editInstagram').value.trim()) || ''
     };
+    if (!ov.homepage && !ov.instagram) {
+        if (!confirm('홈페이지/인스타그램이 비어 있습니다. 고객 접점이 없는 브랜드로 저장할까요?')) return;
+    }
     Object.keys(ov).forEach(function(k) { if (!ov[k]) delete ov[k]; });
 
     brandOverrides[oldName] = ov;
@@ -3884,6 +3955,7 @@ async function backupToGitHub(pat) {
                     if (ov.definition !== undefined) brand.definition = ov.definition;
                     if (ov.description !== undefined) brand.description = ov.description;
                     brand.homepage = ov.homepage || '';
+                    brand.instagram = ov.instagram || brand.instagram || '';
                     break;
                 }
             }
