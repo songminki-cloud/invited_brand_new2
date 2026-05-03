@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-04-25T08:46:47.648Z",
+  "savedAt": "2026-05-03T13:48:00.000Z",
   "overrides": {},
   "customBrands": [
     {
@@ -145,6 +145,198 @@
       "createdAt": "2026-04-25",
       "isCustom": true,
       "archivedCategory": "philosophy"
+    },
+    {
+      "no": "OC2604-C02",
+      "name": "윌리 차바리아 (Willy Chavarria)",
+      "country": "USA",
+      "headline": "Chicano Tailoring",
+      "definition": "라틴 커뮤니티의 정체성을 현대 테일러링으로 확장하는 브랜드",
+      "description": "치카노 문화와 공동체의 자부심을 과장된 실루엣, 강한 테일러링, 사회적 메시지로 풀어내는 브랜드입니다. Zara 협업은 일회성 이슈지만, 브랜드 자체는 미국 패션에서 문화적 서사를 가장 선명하게 가진 디자이너 브랜드로 저장 가치가 있습니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "concept",
+      "id": "custom_oncuration_2604_willy_chavarria"
+    },
+    {
+      "no": "OC2604-C04",
+      "name": "프토토타입 (Prototype)",
+      "country": "Switzerland",
+      "headline": "Deadstock Reborn",
+      "definition": "데드스톡과 빈티지를 해체해 새 옷으로 되살리는 스위스 업사이클링 브랜드",
+      "description": "알파 인더스트리의 데드스톡 원단과 빈티지 피스를 분해해 새로운 제품으로 재탄생시키는 브랜드입니다. 지속가능성을 구호가 아니라 소재와 제작 방식으로 보여준다는 점에서 일시적 협업 이상의 브랜드 철학이 있습니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "concept",
+      "id": "custom_oncuration_2604_prototype"
+    },
+    {
+      "no": "OC2604-C05",
+      "name": "하우스 오브 에러 (House Of Error)",
+      "country": "UK",
+      "headline": "Architectural Fashion",
+      "definition": "건축적 실루엣과 빈티지 변형으로 독창적인 옷을 만드는 브랜드",
+      "description": "건축 전공 디자이너 Fully가 전개하는 브랜드로, 과장된 실루엣과 독특한 소재 선택, 빈티지 변형 디자인이 특징입니다. 한남동 팝업 뉴스는 단기 이슈지만, 브랜드의 조형 언어가 뚜렷해 저장 가치가 있습니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "concept",
+      "id": "custom_oncuration_2604_house_of_error"
+    },
+    {
+      "no": "OC2604-C06",
+      "name": "VA Tokyo",
+      "country": "Japan",
+      "headline": "Hiroshi's Archive Edit",
+      "definition": "후지와라 히로시가 클래식을 다시 편집하는 도쿄 기반 프로젝트",
+      "description": "슈퍼스타와 스탠스미스를 페이던트 레더와 80년대 무드로 다시 엮어내는 방식에서, 후지와라 히로시 특유의 아카이브 편집 감각이 드러납니다. 제품 하나보다 편집자적 관점 자체가 브랜드 가치입니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "concept",
+      "id": "custom_oncuration_2604_va_tokyo"
+    },
+    {
+      "no": "OC2604-ST02",
+      "name": "브레인 데드 (Brain Dead)",
+      "country": "USA",
+      "headline": "Graphic Collective",
+      "definition": "그래픽 디자이너 집단이 운영하는 LA 기반 스트리트웨어",
+      "description": "Andersson Bell과의 협업에서는 투아레그 유목민 문화와 웨스턴 무드를 그래픽과 실루엣으로 풀어냈습니다. 컬래버레이션이 많지만 브랜드 자체의 그래픽 집단 정체성이 강해 Invited의 시각·서사형 브랜드로 적합합니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "street",
+      "id": "custom_oncuration_2604_brain_dead"
+    },
+    {
+      "no": "OC2604-ST03",
+      "name": "디스이즈네버댓 (thisisneverthat)",
+      "country": "Korea",
+      "headline": "K-Street Archive",
+      "definition": "글로벌 스트리트 문화와 한국적 속도를 결합한 브랜드",
+      "description": "Grateful Dead 협업처럼 음악, 그래픽, 스트리트 아카이브를 한국 브랜드의 속도로 재해석합니다. 이미 잘 알려졌지만 한국 스트리트웨어의 글로벌 확장 사례로 Invited 안에서 참고 가치가 있습니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "street",
+      "id": "custom_oncuration_2604_thisisneverthat"
+    },
+    {
+      "no": "OC2604-ST04",
+      "name": "다임 MTL (Dime MTL)",
+      "country": "Canada",
+      "headline": "Classic Meets Punk",
+      "definition": "클래식한 실루엣에 펑크 감성을 더하는 몬트리올 기반 브랜드",
+      "description": "몬트리올 스케이트 컬처에서 출발했지만 과장된 하입보다 균형 잡힌 그래픽과 실루엣을 유지하는 브랜드입니다. Timex 협업의 스터드 디지털 워치는 클래식과 펑크를 섞는 브랜드 감각을 잘 보여줍니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "street",
+      "id": "custom_oncuration_2604_mtl_dime_mtl"
+    },
+    {
+      "no": "OC2604-H01",
+      "name": "요크 (Yoke)",
+      "country": "Japan",
+      "headline": "Elegant Pattern Work",
+      "definition": "소재와 패턴으로 우아한 실루엣을 만드는 일본 브랜드",
+      "description": "Foot the Coacher와의 로퍼 협업에서 보이듯, 요크는 소재와 패턴을 통해 절제된 우아함을 만드는 브랜드입니다. 과한 로고보다 실루엣과 비례감으로 설득하는 브랜드라 M몰의 감도 높은 패션 큐레이션 후보로 적합합니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "heritage",
+      "id": "custom_oncuration_2604_yoke"
+    },
+    {
+      "no": "OC2604-H02",
+      "name": "풋더코쳐 (Foot the Coacher)",
+      "country": "Japan",
+      "headline": "Refined Footwear Craft",
+      "definition": "빈티지 구두의 실루엣을 현대적으로 다듬는 일본 풋웨어 브랜드",
+      "description": "프랑스 빈티지 로퍼를 기반으로 낮은 발등과 날렵한 라스트, 유연한 이탈리아 가죽을 조합하는 구두 브랜드입니다. 스니커즈 중심의 시장에서 정교한 풋웨어 감도를 보여주는 희소성 있는 후보입니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "heritage",
+      "id": "custom_oncuration_2604_foot_the_coacher"
+    },
+    {
+      "no": "OC2604-H03",
+      "name": "오어슬로우 (orSlow)",
+      "country": "Japan",
+      "headline": "Slow Denim Aging",
+      "definition": "오래 입은 듯한 자연스러운 에이징을 구현하는 일본 데님 브랜드",
+      "description": "Beams Boy 50주년 협업에서 먼로 팬츠와 재킷을 50년간 입은 듯한 에이징으로 표현했습니다. 트렌드보다 시간, 원단, 착용감에 집중하는 브랜드라 헤리티지 데님 카테고리에서 저장 가치가 높습니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "heritage",
+      "id": "custom_oncuration_2604_orslow"
+    },
+    {
+      "no": "OC2604-H04",
+      "name": "엔지니어드 가먼츠 (Engineered Garments)",
+      "country": "USA / Japan",
+      "headline": "Utility Tailoring",
+      "definition": "워크웨어와 테일러링을 결합하는 네펜데스 기반 브랜드",
+      "description": "Saucony 협업 벨크로 슈즈처럼 실용적인 디테일을 어른스러운 방식으로 재해석하는 브랜드입니다. 유행보다 오래 축적된 워크웨어, 밀리터리, 스포츠 아카이브를 현대적으로 편집하는 힘이 있습니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "heritage",
+      "id": "custom_oncuration_2604_engineered_garments"
+    },
+    {
+      "no": "OC2604-H05",
+      "name": "아야메 (Ayame)",
+      "country": "Japan",
+      "headline": "Modern Optical Craft",
+      "definition": "전통과 현대의 균형을 아이웨어로 구현하는 일본 브랜드",
+      "description": "그래픽 디자이너 SHINKNOWNSUKE와의 협업에서 볼드한 림과 둥근 엔드피스를 선보인 일본 아이웨어 브랜드입니다. 트렌디하지만 과하지 않고, 안경이라는 작은 오브제에 브랜드의 균형감이 드러납니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "heritage",
+      "id": "custom_oncuration_2604_ayame"
+    },
+    {
+      "no": "OC2604-E01",
+      "name": "어니 팔로 (Ernie Palo)",
+      "country": "Japan",
+      "headline": "Daily Quiet Style",
+      "definition": "일상의 자연스러운 멋을 고민하는 일본 브랜드",
+      "description": "BLANC와의 협업 아이웨어에서 보이듯 성별과 스타일에 구애받지 않는 부드러운 일상복 감각을 지향합니다. 과장된 트렌드보다 조용한 실루엣과 데일리 웨어 감도가 강해 장기 관찰할 만한 브랜드입니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "emerging",
+      "id": "custom_oncuration_2604_ernie_palo"
+    },
+    {
+      "no": "OC2604-E02",
+      "name": "에브리원 (everyone)",
+      "country": "Japan",
+      "headline": "Tokyo Insider Uniform",
+      "definition": "도쿄 인사이더 감각으로 스포츠와 일상복을 편집하는 브랜드",
+      "description": "아디다스와의 월드컵 무드 협업처럼 스포츠 저지를 일상복과 문화 코드로 번역합니다. 아직 대중적 브랜드라기보다 도쿄 안쪽의 감도를 보여주는 브랜드라 Emerging 후보로 저장해둘 만합니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "emerging",
+      "id": "custom_oncuration_2604_everyone"
+    },
+    {
+      "no": "OC2604-SS01",
+      "name": "웨버 (Weber)",
+      "country": "Japan",
+      "headline": "Cinema Vintage",
+      "definition": "영화와 빈티지 그래픽을 90년대 실크스크린 방식으로 재현하는 도쿄 숍",
+      "description": "도쿄 기반 빈티지 아카이브 숍으로, 영화와 그래픽을 티셔츠 문화로 번역합니다. Fight Club 컬렉션처럼 프린트의 질감과 균열까지 구현해 단순 굿즈가 아니라 영화적 기억을 입는 방식으로 풀어냅니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "select_shop",
+      "id": "custom_oncuration_2604_weber"
+    },
+    {
+      "no": "OC2604-SS02",
+      "name": "194 뉴욕 (194 New York)",
+      "country": "USA",
+      "headline": "Caribbean Vintage Denim",
+      "definition": "빈티지 데님과 컬러 감각을 현대적으로 편집하는 뉴욕 셀렉트 숍",
+      "description": "Levi's 협업에서 가먼트 다잉과 카리브해 컬러 무드를 통해 인디고 중심 데님 문법을 비틀었습니다. 단순 빈티지 숍이 아니라 데님과 컬러를 자신만의 감각으로 편집하는 숍으로 기록할 가치가 있습니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "select_shop",
+      "id": "custom_oncuration_2604_194_194_new_york"
     }
   ]
 }
