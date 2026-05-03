@@ -686,14 +686,23 @@ body {
     margin-bottom: 16px;
 }
 
+.brand-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    margin: 8px 0 4px;
+}
+
 .brand-link {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     color: var(--charcoal);
     text-decoration: none;
     font-size: 0.8rem;
     border-bottom: 1px solid var(--gold);
     padding-bottom: 2px;
-    transition: color 0.2s;
+    transition: color 0.2s, border-color 0.2s, transform 0.2s;
 }
 
 .brand-link:active {
@@ -1022,6 +1031,11 @@ footer {
         margin-bottom: 22px !important;
     }
     
+    .brand-links {
+        gap: 12px 16px !important;
+        margin-top: 10px !important;
+    }
+    
     .brand-link {
         font-size: 0.85rem !important;
         transition: all 0.2s ease;
@@ -1030,7 +1044,7 @@ footer {
     .brand-link:hover {
         color: var(--gold);
         border-bottom-color: var(--charcoal);
-        padding-left: 2px;
+        transform: translateX(2px);
     }
     
     .brand-meta {
@@ -2075,6 +2089,53 @@ function applyOverrides(brand) {
     return ov ? Object.assign({}, brand, ov) : brand;
 }
 
+
+function normalizeBrandNameForLinks(name) {
+    return (name || '')
+        .toLowerCase()
+        .replace(/&/g, 'and')
+        .replace(/프토토타입/g, '프로토타입')
+        .replace(/애브리원/g, '에브리원')
+        .replace(/anderson/g, 'andersson')
+        .replace(/thehwdogandco/g, 'hwdogco')
+        .replace(/thehwdogco/g, 'hwdogco')
+        .replace(/hwdogandco/g, 'hwdogco')
+        .replace(/[^a-z0-9가-힣]+/g, '');
+}
+
+function brandAliasKeysForLinks(name) {
+    var raw = name || '';
+    var keys = [raw, raw.replace(/\([^)]*\)/g, '')];
+    var matches = raw.match(/\(([^)]*)\)/g) || [];
+    matches.forEach(function(m) { keys.push(m.replace(/[()]/g, '')); });
+    var out = {};
+    keys.forEach(function(k) {
+        var nk = normalizeBrandNameForLinks(k);
+        if (nk) out[nk] = true;
+    });
+    return Object.keys(out);
+}
+
+function findCanonicalBrandLinks(brand) {
+    var result = { homepage: '', instagram: '' };
+    var aliases = brandAliasKeysForLinks(brand && brand.name);
+    if (!aliases.length || typeof DATA === 'undefined') return result;
+    for (var cat in DATA) {
+        if (!Array.isArray(DATA[cat])) continue;
+        for (var i = 0; i < DATA[cat].length; i++) {
+            var candidate = DATA[cat][i];
+            var cAliases = brandAliasKeysForLinks(candidate.name);
+            var hit = aliases.some(function(a) { return cAliases.indexOf(a) >= 0; });
+            if (hit) {
+                result.homepage = candidate.homepage || '';
+                result.instagram = candidate.instagram || '';
+                return result;
+            }
+        }
+    }
+    return result;
+}
+
 // Shared card renderer used by all pages
 function makeBrandCardHTML(b, index, cat, isCustom) {
     var bd = applyOverrides(b);
@@ -2083,8 +2144,9 @@ function makeBrandCardHTML(b, index, cat, isCustom) {
     var quotedName = b.name.replace(/"/g, '&quot;');
     var escapedName = (bd.name||b.name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     var overrideHomepage = brandOverrides[b.name] && brandOverrides[b.name].homepage;
-    var homepage = overrideHomepage || (b.homepage || '');
-    var instagram = b.instagram || '';
+    var canonicalLinks = findCanonicalBrandLinks(b);
+    var homepage = overrideHomepage || (b.homepage || canonicalLinks.homepage || '');
+    var instagram = b.instagram || canonicalLinks.instagram || '';
     var safeCat = (cat || '').replace(/'/g, "\\'");
 
     var homepageHref = homepage ? homepage.replace(/"/g,'&quot;') : '';
@@ -2114,11 +2176,15 @@ function makeBrandCardHTML(b, index, cat, isCustom) {
     html += '<p class="brand-definition">' + (bd.definition||'') + '</p>';
     html += '<p class="brand-description">' + (bd.description||'') + '</p>';
     if (isCustom) html += '<p class="archived-date">' + (b.createdAt||'') + ' 아카이빙</p>';
-    if (homepageHref) {
-        html += '<a href="' + homepageHref + '" target="_blank" rel="noopener noreferrer" class="brand-link">Homepage →</a>';
-    }
-    if (instagramHref && instagramHref !== homepageHref) {
-        html += '<a href="' + instagramHref + '" target="_blank" rel="noopener noreferrer" class="brand-link">Instagram →</a>';
+    if (homepageHref || (instagramHref && instagramHref !== homepageHref)) {
+        html += '<div class="brand-links">';
+        if (homepageHref) {
+            html += '<a href="' + homepageHref + '" target="_blank" rel="noopener noreferrer" class="brand-link">Homepage →</a>';
+        }
+        if (instagramHref && instagramHref !== homepageHref) {
+            html += '<a href="' + instagramHref + '" target="_blank" rel="noopener noreferrer" class="brand-link">Instagram →</a>';
+        }
+        html += '</div>';
     }
     html += '<button class="brand-edit-btn" onclick="openEditModal(\'' + safeName + '\',\'' + safeCat + '\')">Edit</button>';
     if (isCustom) {
