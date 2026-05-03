@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-03T13:48:00.000Z",
+  "savedAt": "2026-05-03T14:25:00.000Z",
   "overrides": {},
   "customBrands": [
     {
@@ -337,6 +337,78 @@
       "verificationReason": "",
       "category": "select_shop",
       "id": "custom_oncuration_2604_194_194_new_york"
+    },
+    {
+      "no": "RIL2605-C01",
+      "name": "액츄얼 소스 (Actual Source)",
+      "country": "USA",
+      "headline": "Graphic Publishing Goods",
+      "definition": "출판, 그래픽, 폰트, 굿즈를 하나의 시각 언어로 전개하는 크리에이티브 스튜디오",
+      "description": "2015년 미국에서 시작한 크리에이티브 서점이자 디자인 스튜디오입니다. 출판물과 어패럴, 스테이셔너리, 디지털 폰트까지 확장하며 몇 개의 글자와 그래픽만으로 취향을 드러내는 브랜드입니다. 단순 굿즈가 아니라 그래픽 디자인을 라이프스타일 제품으로 번역하는 힘이 있습니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "concept",
+      "id": "custom_readitlater_actual_source"
+    },
+    {
+      "no": "RIL2605-ST01",
+      "name": "알프레드 (Alfred)",
+      "country": "Korea",
+      "headline": "Vintage Graphic Headwear",
+      "definition": "밀리터리, 워크웨어, 서브컬처 그래픽을 모자로 풀어내는 한국 브랜드",
+      "description": "헤리티지 기반의 취향을 스트리트 무드로 확장하는 브랜드입니다. 빈티지 그래픽, 밀리터리, 워크웨어, 서브컬처를 헤드웨어에 집중해 전개하며 작지만 선명한 그래픽 언어를 갖고 있습니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "street",
+      "id": "custom_readitlater_alfred"
+    },
+    {
+      "no": "RIL2605-ST02",
+      "name": "카키스 (Khakis)",
+      "country": "Korea",
+      "headline": "Retro Utility Goods",
+      "definition": "레트로 그래픽과 실용적인 캐주얼 감도를 결합하는 한국 브랜드/스토어",
+      "description": "카키스의 헤드웨어 컬렉션은 브랜드 안에서 드물게 그래픽 플레이가 강하게 드러나는 영역입니다. 16비트 디지털 그래픽, 캔버스와 코듀로이 같은 소재 조합을 통해 과하지 않은 레트로 캐주얼 감도를 보여줍니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "street",
+      "id": "custom_readitlater_khakis"
+    },
+    {
+      "no": "RIL2605-SS01",
+      "name": "아이디어 (IDEA)",
+      "country": "UK",
+      "headline": "Art Book Souvenir",
+      "definition": "패션, 그래픽 아트, 테크노 감각을 굿즈로 확장하는 런던 북스토어",
+      "description": "포토그래퍼와 비디오 아티스트가 설립한 런던 기반 북스토어입니다. 책뿐 아니라 티셔츠, 가방, 모자까지 감각적인 아트워크를 입힌 수베니어를 전개하며 패션과 그래픽 아트 사이의 취향을 선명하게 보여줍니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "select_shop",
+      "id": "custom_readitlater_idea"
+    },
+    {
+      "no": "RIL2605-SS02",
+      "name": "프렌치 트루터스 (French Trotters)",
+      "country": "France",
+      "headline": "Travel Curated Lifestyle",
+      "definition": "여행에서 얻은 영감으로 패션과 라이프스타일을 큐레이션하는 파리 편집숍",
+      "description": "덴마크, 브라질, 인도, 프랑스 등 다양한 국가의 좋은 제품을 선별하는 파리 편집숍입니다. 패션뿐 아니라 향, 가구, 라이프스타일까지 함께 다루며 여행자의 시선으로 취향 있는 제품을 모읍니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "select_shop",
+      "id": "custom_readitlater_french_trotters"
+    },
+    {
+      "no": "RIL2605-SS03",
+      "name": "메르시 파리 (Merci Paris)",
+      "country": "France",
+      "headline": "Paris Lifestyle Institution",
+      "definition": "패션과 리빙을 함께 제안하는 파리 대표 라이프스타일 편집숍",
+      "description": "파리를 대표하는 편집숍 중 하나로, 라이프스타일 소품과 패션 브랜드를 함께 큐레이션합니다. 유니버셜 웍스, 스토리 Mfg, 포터, 하울린 등 좋은 만듦새의 브랜드를 소개하며 파리식 생활 감도를 보여주는 공간입니다.",
+      "needsVerification": false,
+      "verificationReason": "",
+      "category": "select_shop",
+      "id": "custom_readitlater_merci_paris"
     }
   ]
 }
