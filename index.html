@@ -2082,13 +2082,13 @@ function makeBrandCardHTML(b, index, cat, isCustom) {
     var safeName = b.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     var quotedName = b.name.replace(/"/g, '&quot;');
     var escapedName = (bd.name||b.name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    var hp = (brandOverrides[b.name] && brandOverrides[b.name].homepage) || (b.homepage || b.instagram || '');
+    var overrideHomepage = brandOverrides[b.name] && brandOverrides[b.name].homepage;
+    var homepage = overrideHomepage || (b.homepage || '');
+    var instagram = b.instagram || '';
     var safeCat = (cat || '').replace(/'/g, "\\'");
 
-    // Determine link type
-    var isInstagram = hp && hp.toLowerCase().includes('instagram.com');
-    var hpLabel = isInstagram ? 'Instagram →' : 'Homepage →';
-    var hpHref = hp ? hp.replace(/"/g,'&quot;') : '';
+    var homepageHref = homepage ? homepage.replace(/"/g,'&quot;') : '';
+    var instagramHref = instagram ? instagram.replace(/"/g,'&quot;') : '';
 
     var html = '<div class="brand-card" style="animation-delay:' + (index*0.05) + 's;"';
     if (isCustom) html += ' data-custom-id="' + (b.id||'').replace(/"/g,'&quot;') + '"';
@@ -2114,8 +2114,11 @@ function makeBrandCardHTML(b, index, cat, isCustom) {
     html += '<p class="brand-definition">' + (bd.definition||'') + '</p>';
     html += '<p class="brand-description">' + (bd.description||'') + '</p>';
     if (isCustom) html += '<p class="archived-date">' + (b.createdAt||'') + ' 아카이빙</p>';
-    if (hpHref) {
-        html += '<a href="' + hpHref + '" target="_blank" rel="noopener noreferrer" class="brand-link">' + hpLabel + '</a>';
+    if (homepageHref) {
+        html += '<a href="' + homepageHref + '" target="_blank" rel="noopener noreferrer" class="brand-link">Homepage →</a>';
+    }
+    if (instagramHref && instagramHref !== homepageHref) {
+        html += '<a href="' + instagramHref + '" target="_blank" rel="noopener noreferrer" class="brand-link">Instagram →</a>';
     }
     html += '<button class="brand-edit-btn" onclick="openEditModal(\'' + safeName + '\',\'' + safeCat + '\')">Edit</button>';
     if (isCustom) {
