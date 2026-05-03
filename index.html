@@ -2049,10 +2049,17 @@ footer {
         <div class="form-group">
             <label class="form-label">Homepage URL</label>
             <input type="url" class="form-input" id="editHomepage" placeholder="https://...">
-            <button class="edit-desc-btn" id="findHpBtn" onclick="findHomepageAI(this)">↺ AI로 홈페이지 찾기</button>
         </div>
-
-        <button class="save-btn" style="display:block;" onclick="saveEditedBrand()">저장</button>
+        <div class="form-group">
+            <label class="form-label">Instagram URL</label>
+            <input type="url" class="form-input" id="editInstagram" placeholder="https://www.instagram.com/...">
+            <button class="edit-desc-btn" id="findHpBtn" onclick="findLinksAI(this)">↺ AI로 홈페이지/인스타그램 찾기</button>
+        </div>
+        <div id="editLinkStatus" style="font-size:0.78rem;color:var(--bronze);line-height:1.6;margin:-6px 0 12px;min-height:20px;"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+            <button class="edit-desc-btn" type="button" onclick="verifyEditLinks(this)">링크 작동 확인</button>
+            <button class="save-btn" style="display:block;max-width:140px;" onclick="saveEditedBrand()">저장</button>
+        </div>
         <button class="delete-brand-modal-btn" onclick="deleteFromEditModal()">이 브랜드 삭제</button>
     </div>
 </div>
